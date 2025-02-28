@@ -36,7 +36,21 @@ func getConfig() (bool, string, time.Time) {
 	return false, "info", time.Now()
 }
 
+func operators() {
+	visits := 15
+	fmt.Println("First visit :", visits == 1)
+	fmt.Println("Retunr visit :", visits != 1)
+
+	// check if there are a silver member
+	fmt.Println("Silver member :", visits >= 10 && visits < 21)
+
+	// gold member
+	fmt.Println("Gold member :", visits > 20 && visits <= 30)
+
+	// platnum member
+	fmt.Println("Platinum member :", visits > 30)
+}
+
 func main() {
-	Debug, LogLevel, startupTime := getConfig()
-	fmt.Println(Debug, LogLevel, startupTime)
+	operators()
 }
