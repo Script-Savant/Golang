@@ -1,10 +1,10 @@
 package main
 
 import (
-    // "fmt"
-    "Algorithms/works"
+	// "fmt"
+	"Algorithms/works"
 )
 
 func main() {
-    works.FizzBuzz(30)
+	works.FizzBuzz2(30)
 }
