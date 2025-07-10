@@ -33,13 +33,14 @@ func main() {
 		fmt.Println("Enter number of tickets: ")
 		fmt.Scan(&userTickets)
 
+		if (userTickets > remainingTickets){
+			fmt.Printf("Sorry, we only have %v remaining tickets.\n\n", remainingTickets)
+			continue
+		}
+
 		remainingTickets -= userTickets
 		bookings = append(bookings, firstName + " "+lastName)
 
-		// fmt.Printf("The whole slice: %v\n", bookings)
-		// fmt.Printf("The first value: %v\n", bookings[0])
-		// fmt.Printf("Slice type: %T\n", bookings)
-		// fmt.Printf("Size of the Slice: %v\n", len(bookings))
 
 		fmt.Printf("Thank you %v %v for booking %v tickets. You will receive a confirmation email at %v.\n", firstName, lastName, userTickets, email)
 		fmt.Printf("%v tickets remaining for %v.\n\n", remainingTickets, conferenceName)
@@ -50,6 +51,13 @@ func main() {
 			firstNames = append(firstNames, names[0])
 		}
 		fmt.Printf("These are all our bookings: %v\n\n\n", firstNames)
+
+		
+		if (remainingTickets == 0){
+			// end program
+			fmt.Println("Our conference is booked out, come back next year.")
+			break
+		}
 	}
 
 }
