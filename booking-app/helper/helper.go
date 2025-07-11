@@ -3,7 +3,7 @@ package helper
 import (
 	"fmt"
 	"strings"
-	"time"
+	
 )
 
 // Validates user input
@@ -31,11 +31,4 @@ func ValidateUserInput(firstName, lastName, email string, userTickets, remaining
 	return false
 }
 
-func SendTicket(userTickets uint, firstName string, lastName string, email string){
-	time.Sleep(10 * time.Second)
-	var ticket = fmt.Sprintf("%v tickets for %v %v", userTickets, firstName, lastName)
-	fmt.Println("######################")
-	fmt.Printf("Sending ticket:\n %v \nTo email address: %v\n", ticket, email)
-	fmt.Println("######################")
 
-}
