@@ -1,4 +1,4 @@
-package main
+package helper
 
 import(
 	"fmt"
@@ -6,7 +6,7 @@ import(
 )
 
 // Validates user input
-func validateUserInput(firstName, lastName, email string, userTickets, remainingTickets uint) bool {
+func ValidateUserInput(firstName, lastName, email string, userTickets, remainingTickets uint) bool {
 	isValidName := len(firstName) >= 2 && len(lastName) >= 2
 	isValidEmail := strings.Contains(email, "@") && len(email) > 5
 	isValidTicketNo := userTickets > 0 && userTickets <= remainingTickets

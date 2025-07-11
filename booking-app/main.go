@@ -1,6 +1,7 @@
 package main
 
 import (
+	"booking-app/helper"
 	"fmt"
 	"strings"
 )
@@ -19,7 +20,7 @@ func main() {
 		firstName, lastName, email, userTickets := getUserInput()
 
 		// Validate input
-		if validateUserInput(firstName, lastName, email, userTickets, remainingTickets) {
+		if helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets) {
 			remainingTickets, bookings = bookTicket(firstName, lastName, email, userTickets, remainingTickets, bookings)
 
 			// Print first names of all bookings
@@ -39,7 +40,8 @@ func main() {
 func greetUsers(confName string, conferenceTickets int, remainingTickets uint) {
 	fmt.Printf("Welcome to %v booking application.\n", confName)
 	fmt.Printf("We have a total of %v tickets and %v are still available.\n", conferenceTickets, remainingTickets)
-	fmt.Println("Get your tickets here to attend.\n")
+	fmt.Println("Get your tickets here to attend.")
+	fmt.Println("")
 }
 
 // Gets user input
