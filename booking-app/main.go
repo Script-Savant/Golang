@@ -3,14 +3,16 @@ package main
 import (
 	"booking-app/helper"
 	"fmt"
-	"strings"
+	"strconv" 
 )
 
+var conferenceName = "Go Conference"
+const conferenceTickets int = 50
+var remainingTickets uint = 50
+var bookings = make([]map[string]string, 0)
+
 func main() {
-	conferenceName := "Go Conference"
-	const conferenceTickets int = 50
-	var remainingTickets uint = 50
-	var bookings []string
+	
 
 	// Greet users
 	greetUsers(conferenceName, conferenceTickets, remainingTickets)
@@ -21,10 +23,10 @@ func main() {
 
 		// Validate input
 		if helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets) {
-			remainingTickets, bookings = bookTicket(firstName, lastName, email, userTickets, remainingTickets, bookings)
+			remainingTickets = bookTicket(firstName, lastName, email, userTickets, remainingTickets)
 
 			// Print first names of all bookings
-			firstNames := printFirstNames(bookings)
+			firstNames := printFirstNames()
 			fmt.Printf("The first names of the bookings are: %v\n\n", firstNames)
 
 			// If tickets are sold out
@@ -65,25 +67,31 @@ func getUserInput() (string, string, string, uint) {
 }
 
 // Books the ticket and returns updated values
-func bookTicket(firstName string, lastName string, email string, userTickets uint, remainingTickets uint, bookings []string) (uint, []string) {
+func bookTicket(firstName string, lastName string, email string, userTickets uint, remainingTickets uint) (uint) {
 	remainingTickets -= userTickets
-	bookings = append(bookings, firstName+" "+lastName)
+
+	var userData = make(map[string] string)
+	userData["firstName"] = firstName
+	userData["lastName"] = lastName
+	userData["email"] = email
+	userData["numberOfTickets"] = strconv.FormatUint(uint64(userTickets), 10)
+
+	bookings = append(bookings, userData)
+	fmt.Printf("List of bookings is: %v\n", bookings)
 
 	fmt.Printf("\nThank you %v %v for booking %v ticket(s).\n", firstName, lastName, userTickets)
 	fmt.Printf("A confirmation email will be sent to %v.\n", email)
 	fmt.Printf("%v ticket(s) remaining.\n\n", remainingTickets)
 
-	return remainingTickets, bookings
+	return remainingTickets
 }
 
 // Extracts first names from bookings
-func printFirstNames(bookings []string) []string {
+func printFirstNames() []string {
 	firstNames := []string{}
 	for _, booking := range bookings {
-		names := strings.Fields(booking)
-		if len(names) > 0 {
-			firstNames = append(firstNames, names[0])
-		}
+		firstNames = append(firstNames, booking["firstName"])
+		
 	}
 	return firstNames
 }
