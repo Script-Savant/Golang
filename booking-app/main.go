@@ -30,6 +30,7 @@ func main() {
 		// Validate input
 		if helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets) {
 			remainingTickets = bookTicket(firstName, lastName, email, userTickets, remainingTickets)
+			helper.SendTicket(userTickets, firstName, lastName, email)
 
 			// Print first names of all bookings
 			firstNames := printFirstNames()
