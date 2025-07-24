@@ -26,11 +26,16 @@ type Director struct {
 var movies []Movie
 
 func getMovies(w http.ResponseWriter, r *http.Request) {
+	// set content type to json then encode movies to json 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(movies)
 }
 
 func deleteMovie(w http.ResponseWriter, r *http.Request) {
+	// set content type to json
+	// fetch parameters from request
+	// loop through the movies to find one whose id matches the one parameters and delete it
+	// encode the new list to json
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	for index, item := range movies {
@@ -43,6 +48,11 @@ func deleteMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMovie(w http.ResponseWriter, r *http.Request) {
+	/*Set the content to json
+	fetch parameters from the request
+	loop through movies to find the item with the id same as one provided by parameters
+	encode the item to json
+	*/
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	for _, item := range movies {
@@ -54,6 +64,13 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func createMovie(w http.ResponseWriter, r *http.Request) {
+	/*
+	set content  to json
+	create a variable movie
+	Decode the request body and assign it to movie
+	add the movie to movies list
+	encode the movie to json
+	*/
 	w.Header().Set("Content-Type", "application/json")
 	var movie Movie
 	_ = json.NewDecoder(r.Body).Decode(&movie)
@@ -85,6 +102,12 @@ func updateMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	/*
+	create a router from mux
+	Define routes for get all, get by id, create, update and delete and their corresponding functions with a method for each
+	wire each to router through HandleFunc
+	Start server
+	*/
 	r := mux.NewRouter()
 
 	movies = append(movies, Movie{Id: "1", Isbn: "234", Title: "Movie 1", Director: &Director{Firstname: "Jane", LastName: "Smith"}})
