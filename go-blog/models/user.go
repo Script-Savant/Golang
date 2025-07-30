@@ -12,7 +12,7 @@ type User struct {
 	Post []Post `gorm:"foreignKey:AuthorID" json:"posts"`
 }
 
-// profile model
+// profile model for user
 type Profile struct {
 	gorm.Model
 	UserID uint `gorm:"not null" json:"user_id"`
