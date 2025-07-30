@@ -13,7 +13,7 @@ var jwtSecret = []byte("secret")
 
 func JWTAuthMiddleware() gin.HandlerFunc {
 	/*
-	- check if the authorixation header is present and valid
+	- check if the authorization header is present and valid
 	- extract the jwt token from the header
 	- verify the tokensignature and expiration
 	- if valid allow the request to continue
