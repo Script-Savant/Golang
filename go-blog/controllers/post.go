@@ -14,6 +14,7 @@ package controllers
 import (
 	"go-blog/models"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -74,5 +75,34 @@ func (pc *PostController) CreatePost(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Post created successfully",
 		"post":    post,
+	})
+}
+
+
+// get all posts
+func (pc *PostController) GetPosts(c *gin.Context){
+	/*
+	- parse pagination parameters -> 10 items per page
+	- query posts with pagination(author, tags)
+	- return the posts
+	*/
+
+	// 1. pagination
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ :=strconv.Atoi(c.DefaultQuery("limit", "2"))
+	offset := (page - 1) * limit
+
+	// 2. query posts with pagination
+	var posts []models.Post
+	if err := pc.DB.Preload("Author").Preload("Tags").Offset(offset).Limit(limit).Find(&posts).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching posts"})
+		return
+	}
+
+	// 3. return the posts
+	c.JSON(http.StatusOK, gin.H{
+		"Posts": posts,
+		"page": page,
+		"limit": limit,
 	})
 }
