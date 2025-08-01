@@ -1,10 +1,11 @@
+package controllers
+
 /*
 make profile operations
 - create a database connection
 - retrieve a profile
 - update a profile
 */
-package controllers
 
 import (
 	"go-blog/models"
