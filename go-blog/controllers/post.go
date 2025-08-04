@@ -106,6 +106,24 @@ func (pc *PostController) GetPosts(c *gin.Context) {
 	})
 }
 
+// GetPost retrieves a single post by ID
+func (pc *PostController) GetPost(c *gin.Context) {
+	// Step 1: Parse the post ID from the URL
+	postID := c.Param("id")
+
+	// Step 2: Query the post with related data (author, tags, comments)
+	var post models.Post
+	if err := pc.DB.Preload("Author").Preload("Tags").Preload("Comments").Preload("Comments.User").First(&post, postID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	// Step 3: Return the post
+	c.JSON(http.StatusOK, gin.H{
+		"post": post,
+	})
+}
+
 // update an existing post
 func (pc *PostController) UpdatePost(c *gin.Context) {
 	/*
