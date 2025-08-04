@@ -11,10 +11,10 @@ import (
 // initialize all routes for the application
 func SetupRoutes(db *gorm.DB) *gin.Engine {
 	/*
-	- create a new gin router with default params
-	- initialize controllers
-	- define public routes
-	- define protected routes
+		- create a new gin router with default params
+		- initialize controllers
+		- define public routes
+		- define protected routes
 	*/
 
 	// 1. gin router
@@ -34,7 +34,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		public.GET("/posts", postController.GetPosts)
 		public.GET("/posts/:id", postController.GetPost)
 		public.POST("/posts/:id/share", postController.SharePost)
-		public.GET("/posts/:postId/comments", commentController.GetComments)
+		public.GET("/posts/:id/comments", commentController.GetComments)
 	}
 
 	// 4. protected routes - require authentication
@@ -49,11 +49,11 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 		protected.POST("/posts", postController.CreatePost)
 		protected.PUT("/posts/:id", postController.UpdatePost)
 		protected.DELETE("/posts/:id", postController.DeletePost)
-		protected.POST("/posts/:id/:action", postController.LikePost) 
+		protected.POST("/posts/:id/:action", postController.LikePost)
 
 		// Comment routes
-		protected.POST("/posts/:postId/comments", commentController.CreateComment)
-		protected.POST("/comments/:commentId/:action", commentController.LikeComment) 
+		protected.POST("/posts/:id/comments", commentController.CreateComment)
+		protected.POST("/comments/:commentId/:action", commentController.LikeComment)
 	}
 
 	return r
