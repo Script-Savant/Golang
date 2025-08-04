@@ -14,10 +14,10 @@ var DB *gorm.DB
 
 func ConnectDatabase() {
 	/*
-	load environment variables from .env file
-	create mysql dsn from env variables
-	open db connection with gorm
-	assign db connection to DB
+		load environment variables from .env file
+		create mysql dsn from env variables
+		open db connection with gorm
+		assign db connection to DB
 	*/
 
 	// load env variables
