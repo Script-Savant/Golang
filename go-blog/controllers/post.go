@@ -218,3 +218,82 @@ func (pc *PostController) DeletePost(c *gin.Context) {
 		"message": "Post deleted successfully",
 	})
 }
+
+// Liking or disliking a post
+func (pc *PostController) LikePost(c *gin.Context) {
+	/*
+		- get the user email from the contex
+		- parse the post id from the url
+		- find the user
+		- check if the post exists
+		- determine if this is a like or dislike
+		- check if the user has already liked/disliked the post
+		- return successresponse
+	*/
+
+	// 1. get the user email
+	email, exists := c.Get("email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve user information"})
+		return
+	}
+
+	// 2. parse the post id and action from url
+	postId := c.Param("id")
+	action := c.Param("action")
+
+	// 3. find the user
+	var user models.User
+	if err := pc.DB.Where("email = ?", email.(string)).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// 4. check if the post exists
+	var post models.Post
+	if err := pc.DB.First(&post, postId).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	// 5. determine like or dislike
+	isLike := true
+	if action == "dislike" {
+		isLike = false
+	}
+
+	// 6. check if user already liked or disliked this post
+	var existingLike models.Like
+	err := pc.DB.Where("user_id = ? AND post_id = ?", user.ID, post.ID).First(&existingLike).Error
+	if err == nil {
+		// like exists, update it
+		if existingLike.IsLike == isLike {
+			// same action, remove the like
+			if err := pc.DB.Delete(&existingLike).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating like"})
+				return
+			}
+		} else {
+			// different action, update the like
+			existingLike.IsLike = isLike
+			if err := pc.DB.Save(&existingLike).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating like"})
+				return
+			}
+		}
+	} else {
+		// no existing like, create new one
+		newLike := models.Like{
+			UserID: user.ID,
+			PostID: &post.ID,
+			IsLike: isLike,
+		}
+		if err := pc.DB.Create(&newLike).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating like"})
+			return
+		}
+	}
+
+	// 7. return success response
+	c.JSON(http.StatusOK, gin.H{"message": "Post reaction updated successfully"})
+}
