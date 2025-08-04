@@ -117,3 +117,75 @@ func (cc *CommentController) GetComments(c *gin.Context) {
 		"limit":    limit,
 	})
 }
+
+// LikeComment handles liking or disliking a comment
+func (cc *CommentController) LikeComment(c *gin.Context) {
+	// Step 1: Get the user's email from context
+	email, exists := c.Get("email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve user information"})
+		return
+	}
+
+	// Step 2: Parse the comment ID and action from the URL
+	commentID := c.Param("commentId")
+	action := c.Param("action") // like or dislike
+
+	// Step 3: Find the user
+	var user models.User
+	if err := cc.DB.Where("email = ?", email.(string)).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Step 4: Check if the comment exists
+	var comment models.Comment
+	if err := cc.DB.First(&comment, commentID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Comment not found"})
+		return
+	}
+
+	// Step 5: Determine if this is a like or dislike
+	isLike := true
+	if action == "dislike" {
+		isLike = false
+	}
+
+	// Step 6: Check if the user already liked/disliked this comment
+	var existingLike models.Like
+	err := cc.DB.Where("user_id = ? AND comment_id = ?", user.ID, comment.ID).First(&existingLike).Error
+
+	if err == nil {
+		// Like exists, update it
+		if existingLike.IsLike == isLike {
+			// Same action, remove the like
+			if err := cc.DB.Delete(&existingLike).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating like"})
+				return
+			}
+		} else {
+			// Different action, update the like
+			existingLike.IsLike = isLike
+			if err := cc.DB.Save(&existingLike).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating like"})
+				return
+			}
+		}
+	} else {
+		// No existing like, create new one
+		newLike := models.Like{
+			UserID:    user.ID,
+			CommentID: &comment.ID,
+			IsLike:    isLike,
+		}
+		if err := cc.DB.Create(&newLike).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating like"})
+			return
+		}
+	}
+
+	// Step 7: Return success response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Comment reaction updated successfully",
+	})
+}
