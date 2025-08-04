@@ -166,3 +166,55 @@ func (pc *PostController) UpdatePost(c *gin.Context) {
 		"post":    post,
 	})
 }
+
+// Delete a post
+func (pc *PostController) DeletePost(c *gin.Context) {
+	/*
+		- get the user's email from context
+		- parse the post id from url
+		- find the post to delete
+		- verify the current user is the author of the post
+		- delete the post
+		- return success response
+	*/
+
+	// 1. get the user email from context
+	email, exists := c.Get("email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve user information"})
+		return
+	}
+
+	// 2. parse the post id from url
+	postID := c.Param("id")
+
+	// 3. find the post to delete
+	var post models.Post
+	if err := pc.DB.First(&post, postID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	// 4. verify the current user is the post author
+	var user models.User
+	if err := pc.DB.Where("email = ?", email.(string)).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	if post.AuthorID != user.ID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You can only delete your own post"})
+		return
+	}
+
+	// 5. delete the post
+	if err := pc.DB.Delete(&post).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting post"})
+		return
+	}
+
+	// 6. return success response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Post deleted successfully",
+	})
+}
