@@ -78,18 +78,17 @@ func (pc *PostController) CreatePost(c *gin.Context) {
 	})
 }
 
-
 // get all posts
-func (pc *PostController) GetPosts(c *gin.Context){
+func (pc *PostController) GetPosts(c *gin.Context) {
 	/*
-	- parse pagination parameters -> 10 items per page
-	- query posts with pagination(author, tags)
-	- return the posts
+		- parse pagination parameters -> 10 items per page
+		- query posts with pagination(author, tags)
+		- return the posts
 	*/
 
 	// 1. pagination
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ :=strconv.Atoi(c.DefaultQuery("limit", "2"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "2"))
 	offset := (page - 1) * limit
 
 	// 2. query posts with pagination
@@ -102,7 +101,68 @@ func (pc *PostController) GetPosts(c *gin.Context){
 	// 3. return the posts
 	c.JSON(http.StatusOK, gin.H{
 		"Posts": posts,
-		"page": page,
+		"page":  page,
 		"limit": limit,
+	})
+}
+
+// update an existing post
+func (pc *PostController) UpdatePost(c *gin.Context) {
+	/*
+		- get the user email from context
+		- parse the post id from the url
+		- find the post to update
+		- verify the current user is the author of the post
+		- bind the update data
+		- update the post
+		- return success response
+	*/
+
+	// 1. get the user email from context
+	email, exists := c.Get("email")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to retrieve user information"})
+		return
+	}
+
+	// 2. parse the postID from url
+	postID := c.Param("id")
+
+	// 3. Find the post to update
+	var post models.Post
+	if err := pc.DB.First(&post, postID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	// 4. verify the current user is the author of the post
+	var user models.User
+	if err := pc.DB.Where("email = ?", email.(string)).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	if post.AuthorID != user.ID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You can only update your own posts"})
+		return
+	}
+
+	// 5. Bind the update data
+	var updateData models.Post
+	if err := c.ShouldBindJSON(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 6. Update the post
+	if err := pc.DB.Model(&post).Updates(updateData).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updateing post"})
+		return
+	}
+
+	// 7. return success response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Post updated successfully",
+		"post":    post,
 	})
 }
