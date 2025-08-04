@@ -297,3 +297,35 @@ func (pc *PostController) LikePost(c *gin.Context) {
 	// 7. return success response
 	c.JSON(http.StatusOK, gin.H{"message": "Post reaction updated successfully"})
 }
+
+// share post
+func (pc *PostController) SharePost(c *gin.Context) {
+	/*
+		- parse the post id from the url
+		- find the post
+		- increment the share count
+		- return success response
+	*/
+
+	// 1. parse the post id from the url
+	postID := c.Param("id")
+
+	// 2. find the post
+	var post models.Post
+	if err := pc.DB.First(&post, postID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	// 3. increment the share count
+	if err := pc.DB.Model(&post).Update("shares", post.Shares+1).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating share count"})
+		return
+	}
+
+	// 4. return success response
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Post share count updated",
+		"shares":  post.Shares + 1,
+	})
+}
