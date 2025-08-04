@@ -85,3 +85,35 @@ func (cc *CommentController) CreateComment(c *gin.Context) {
 		"comment": comment,
 	})
 }
+
+// reterieve all comments for a post with pagination
+func (cc *CommentController) GetComments(c *gin.Context) {
+	/*
+		- parse the post id from url
+		- parse pgaination parameters
+		- query comments & user info
+		- return the comments
+	*/
+
+	// 1. parse the post id from the url
+	postID := c.Param("postId")
+
+	// 2. parse pagination params
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	offset := (page - 1) * limit
+
+	// 3. Query comments with pagination,including user information
+	var comments []models.Comment
+	if err := cc.DB.Preload("User").Where("post_id = ?", postID).Offset(offset).Limit(limit).Find(&comments).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching comments"})
+		return
+	}
+
+	// 4. return the comments
+	c.JSON(http.StatusOK, gin.H{
+		"comments": comments,
+		"page":     page,
+		"limit":    limit,
+	})
+}
