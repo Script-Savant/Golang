@@ -13,7 +13,7 @@ type User struct {
 	Name     string `gorm:"size:255;not null" json:"name"`
 	Email    string `gorm:"size:255;not null;unique" json:"email"`
 	Password string `gorm:"size:255;not null" json:"-"`
-	Role     string `gorm:"size:50;default:'waiter';" json:"role"`
+	Role     string `gorm:"size:50;default:'staff';" json:"role"`
 }
 
 // BeforeSave - gorm hook that hashes the password before saving
