@@ -90,3 +90,69 @@ func Login(c *gin.Context) {
 		"token":   token,
 	})
 }
+
+//Me -> returns the authenticated user's info
+/*
+1. get user ID from context
+2. Find user in db
+3. Return user
+*/
+func Me(c *gin.Context) {
+	// 1. get user id from context
+	userID := helpers.GetUserID(c)
+
+	// 2. find user in db
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// 3. return user
+	c.JSON(200, gin.H{"user": user})
+}
+
+// UpdateMe -> allows logged in user to update their profile(name and pass)
+/*
+1. Bind input
+2. Get user from db
+3. Update only provided fields
+4. Save and return updated user
+*/
+func UpdateMe(c *gin.Context) {
+	// 1. bind input
+	userID := helpers.GetUserID(c)
+
+	// 2. Get user from DB
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		c.JSON(404, gin.H{"error": "User not found"})
+		return
+	}
+
+	// 3. Only update provided fields
+	var input struct {
+		Name     string `json:"name"`
+		Password string `json:"password"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	if input.Name != "" {
+		user.Name = input.Name
+	}
+	if input.Password != "" {
+		user.Password = input.Password
+	}
+
+	// 4. save and return updates user
+	if err := config.DB.Save(&user).Error; err != nil {
+		c.JSON(500, gin.H{"error": "Failed to update profile"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Profile updated successfully"})
+}
