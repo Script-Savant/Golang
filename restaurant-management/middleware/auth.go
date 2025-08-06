@@ -40,6 +40,15 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			userID := uint(claims["user_id"].(float64))
+			role := claims["role"].(string)
+
+			// set into context
+			c.Set("user_id", userID)
+			c.Set("role", role)
+		}
+
 		c.Next()
 	}
 }
