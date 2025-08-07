@@ -10,6 +10,7 @@ import (
 	"golang-restaurant-management/models"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
@@ -66,6 +67,15 @@ func SetupDatabase() {
 	if err != nil {
 		log.Fatal("failed to connect to the database: ", err)
 	}
+
+	// set connection pool settings
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get sql.DB from GORM: %v", err)
+	}
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxIdleTime(5*time.Minute)
 
 	log.Println("Successfully connected to the database")
 	DB = db
