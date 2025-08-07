@@ -7,6 +7,7 @@ import (
 	"golang-restaurant-management/helpers"
 	"golang-restaurant-management/models"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -155,4 +156,31 @@ func UpdateMe(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": "Profile updated successfully"})
+}
+
+// ListAllUsers -> list all registered users (admin only functionlaity)
+/*
+1. pagination
+2. query all users
+3. return the users as JSON
+*/
+func ListAllUsers(c *gin.Context) {
+	// 1. pagination
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+	offset := (page - 1) * limit
+
+	// 2. query all users
+	var users []models.User
+	if err := config.DB.Offset(offset).Limit(limit).Find(&users).Error; err != nil {
+		c.JSON(500, gin.H{"error": "Unable to fetch users"})
+		return
+	}
+
+	// 3. return all users in json
+	c.JSON(200, gin.H{
+		"users": users,
+		"page":  page,
+		"limit": limit,
+	})
 }
