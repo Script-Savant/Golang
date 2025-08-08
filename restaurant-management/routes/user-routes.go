@@ -20,5 +20,7 @@ func RegisterUserRoutes(r *gin.Engine) {
 		// protected routes
 		users.GET("me", middleware.JWTAuthMiddleware(), controllers.Me)
 		users.PUT("me", middleware.JWTAuthMiddleware(), controllers.UpdateMe)
+		users.GET("all-users", middleware.JWTAuthMiddleware(), middleware.AdminOnly(), controllers.ListAllUsers)
+		users.DELETE("delete-user", middleware.JWTAuthMiddleware(), middleware.AdminOnly(), controllers.DeleteUser)
 	}
 }
