@@ -40,3 +40,26 @@ func GetTables(c *gin.Context) {
 		"limit":  limit,
 	})
 }
+
+// GetTable - get a specific table details
+/*
+1. Fetch table id from param
+2. Fetch table from db
+3. return response with the table
+*/
+func GetTable(c *gin.Context) {
+	// 1. Fetch id from params
+	tableID := c.Param("id")
+
+	// 2. Fetch table from db
+	var table models.Table
+	if err := config.DB.First(&table, tableID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Table not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Table fetched successfully",
+		"table":   table,
+	})
+}
