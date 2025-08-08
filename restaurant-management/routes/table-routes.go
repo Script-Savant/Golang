@@ -14,10 +14,10 @@ func RegisterTableRoutes(r *gin.Engine) {
 	tables := r.Group("api/tables/")
 	tables.Use(middleware.JWTAuthMiddleware())
 	{
-		tables.GET("tables", controllers.GetTables)
-		tables.GET("tables/:id", controllers.GetTable)
-		tables.POST("tables", middleware.AdminOnly(), controllers.CreateTable)
-		tables.PUT("tables/:id", controllers.UpdateTable)
-		tables.DELETE("tables/:id", middleware.AdminOnly(), controllers.DeleteTable)
+		tables.GET("/", controllers.GetTables)
+		tables.GET("/:id", controllers.GetTable)
+		tables.POST("/", middleware.AdminOnly(), controllers.CreateTable)
+		tables.PUT("/:id", controllers.UpdateTable)
+		tables.DELETE("/:id", middleware.AdminOnly(), controllers.DeleteTable)
 	}
 }
