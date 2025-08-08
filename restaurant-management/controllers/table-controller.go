@@ -63,3 +63,26 @@ func GetTable(c *gin.Context) {
 		"table":   table,
 	})
 }
+
+// CreateTable - create a table
+/*
+1. bind json data with table struct
+2. Save the table to the db
+3. response
+*/
+func CreateTable(c *gin.Context) {
+	// 1. bind incoming json to table struct
+	var table models.Table
+	if err := c.ShouldBindJSON(&table); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 2. Save to db
+	if err := config.DB.Create(&table).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating table"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "table created successfully", "table": table})
+}
