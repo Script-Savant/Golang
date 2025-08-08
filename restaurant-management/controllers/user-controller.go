@@ -184,3 +184,30 @@ func ListAllUsers(c *gin.Context) {
 		"limit": limit,
 	})
 }
+
+// DeleteUser - delete a user account by id (admin)
+/*
+1. extract the user id from params
+2. pull the user with that id
+3. delete the user
+4. return success
+*/
+func DeleteUser(c *gin.Context) {
+	// 1. Extract the user id from params
+	userID := c.Param("user_id")
+
+	// 2. pull the user with that ID
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// 3. Delete the user
+	if err := config.DB.Delete(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting that user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "user deleted s uccessfully"})
+}
