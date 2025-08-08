@@ -3,13 +3,23 @@
 
 package models
 
-import "gorm.io/gorm"
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
 
 type Table struct {
 	gorm.Model
-	Number    int    `gorm:"unique;not null" json:"number"`
-	Capacity  int    `gorm:"not null" json:"capacity"`
-	Location  string `gorm:"size:255" json:"location"`
-	Status    string `gorm:"size:50;default:'available'" json:"status"`
-	IsSmoking bool   `gorm:"default:false" json:"is_smoking"`
+	Number   uint   `gorm:"unique;not null" json:"number"`
+	Capacity uint   `gorm:"not null" json:"capacity"`
+	Location string `gorm:"size:255" json:"location"`
+	Status   string `gorm:"size:50;default:'available'" json:"status"`
+}
+
+func (t *Table) BeforeSave(tx *gorm.DB) (err error) {
+	if t.Number == 0 || t.Capacity == 0 {
+		return errors.New("table and capacity must be grater tha zero")
+	}
+	return nil
 }
