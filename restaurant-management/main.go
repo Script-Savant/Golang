@@ -24,6 +24,9 @@ func main() {
 	// register user routes (public)
 	routes.RegisterUserRoutes(r)
 
+	// register table routes
+	routes.RegisterTableRoutes(r)
+
 	// start server
 	fmt.Println("Server starting at localhost:8080")
 	r.Run(":8080")
