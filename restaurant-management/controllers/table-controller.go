@@ -86,3 +86,41 @@ func CreateTable(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "table created successfully", "table": table})
 }
+
+// UpdateTable - update a table
+/*
+1. bind incoming json to a table struct
+2. fetch the specified table
+3. update the table
+4. persist the changes to db
+5. return table
+*/
+func UpdateTable(c *gin.Context) {
+	// 1. bindincoming json to table struct
+	var body models.Table
+
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 2. Fetch the candidate table
+	tableID := c.Param("id")
+	var table models.Table
+
+	if err := config.DB.First(&table, tableID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Table not found"})
+		return
+	}
+
+	// 3. update the table & persist the changes to db
+	if err := config.DB.Model(&table).Updates(&body).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating table"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Table updated successfully",
+		"table":   table,
+	})
+}
