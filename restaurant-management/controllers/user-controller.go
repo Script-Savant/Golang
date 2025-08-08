@@ -194,7 +194,7 @@ func ListAllUsers(c *gin.Context) {
 */
 func DeleteUser(c *gin.Context) {
 	// 1. Extract the user id from params
-	userID := c.Param("user_id")
+	userID := c.Param("id")
 
 	// 2. pull the user with that ID
 	var user models.User
