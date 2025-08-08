@@ -124,3 +124,32 @@ func UpdateTable(c *gin.Context) {
 		"table":   table,
 	})
 }
+
+// DeleteTable - delete a specified table
+/*
+1. fetch table id from params
+2. Confirm the table exists in the db
+3. delete the table
+4. response
+*/
+func DeleteTable(c *gin.Context) {
+	// 1. fwtch id from params
+	tableID := c.Param("id")
+
+	// 2. fetch table
+	var table models.Table
+	if err := config.DB.First(&table, tableID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Table not found"})
+		return
+	}
+
+	// 3.Delete the table
+	if err := config.DB.Delete(&table).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting the thable"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Table deleted successfully",
+	})
+}
