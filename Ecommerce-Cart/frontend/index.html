@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Golang Ecommerce API Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style id="app-style">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8f5f2;
+    }
+
+    .sidebar {
+      width: 280px;
+      background-color: #fff;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      border-right: 1px solid #e5e7eb;
+      transition: all 0.3s ease;
+    }
+
+    .main-content {
+      margin-left: 280px;
+      padding: 20px 40px;
+    }
+
+    .top-bar {
+      background-color: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      height: 60px;
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 280px;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 40px;
+    }
+
+    .content-area {
+      margin-top: 80px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 12px 24px;
+      color: #4b5563;
+      transition: all 0.2s ease;
+      border-left: 4px solid transparent;
+    }
+
+    .nav-link:hover {
+      background-color: #f8f5f2;
+      color: #f97316;
+      border-left-color: #f97316;
+    }
+
+    .nav-link.active {
+      background-color: #fff7ed;
+      color: #f97316;
+      border-left-color: #f97316;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background-color: #f97316;
+      color: white;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: #ea580c;
+    }
+
+    .btn-secondary {
+      background-color: #e5e7eb;
+      color: #4b5563;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: #d1d5db;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #f97316;
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 12px;
+      width: 500px;
+      max-width: 90%;
+      padding: 24px;
+    }
+
+    .badge {
+      background-color: #f97316;
+      color: white;
+      border-radius: 9999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .product-card {
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .upload-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background-color: white;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transition: all 0.2s ease;
+    }
+
+    .product-image-container:hover .upload-btn {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="p-6">
+      <h1 class="text-2xl font-bold text-gray-800">Ecommerce API</h1>
+      <p class="text-sm text-gray-500 mt-1">Admin Dashboard</p>
+    </div>
+    <nav class="mt-6">
+      <a href="javascript:void(0)" class="nav-link" data-page="register">
+        <i class="fas fa-user-plus mr-3 w-5"></i>
+        Register
+      </a>
+      <a href="javascript:void(0)" class="nav-link" data-page="login">
+        <i class="fas fa-sign-in-alt mr-3 w-5"></i>
+        Login
+      </a>
+      <a href="javascript:void(0)" class="nav-link" data-page="profile">
+        <i class="fas fa-user mr-3 w-5"></i>
+        Profile
+      </a>
+      <a href="javascript:void(0)" class="nav-link" data-page="addresses">
+        <i class="fas fa-map-marker-alt mr-3 w-5"></i>
+        Addresses
+      </a>
+      <a href="javascript:void(0)" class="nav-link" data-page="products">
+        <i class="fas fa-box mr-3 w-5"></i>
+        Products
+      </a>
+      <a href="javascript:void(0)" class="nav-link" data-page="cart">
+        <i class="fas fa-shopping-cart mr-3 w-5"></i>
+        Cart
+      </a>
+    </nav>
+  </div>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <h2 class="text-lg font-semibold text-gray-800">Golang Ecommerce API</h2>
+    <div id="auth-controls">
+      <!-- Auth controls will be displayed here based on login status -->
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="content-area">
+      <!-- Register Page -->
+      <div id="register-page" class="hidden">
+        <h1 class="text-2xl font-bold mb-6">Create an Account</h1>
+        <div class="card max-w-md mx-auto">
+          <form id="register-form">
+            <div class="mb-4">
+              <label class="block text-gray-700 mb-2" for="email">Email Address</label>
+              <input type="email" id="register-email" class="form-input" placeholder="you@example.com" required>
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 mb-2" for="password">Password</label>
+              <input type="password" id="register-password" class="form-input" placeholder="••••••••" required>
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 mb-2" for="confirm-password">Confirm Password</label>
+              <input type="password" id="confirm-password" class="form-input" placeholder="••••••••" required>
+            </div>
+            <div class="flex justify-between items-center">
+              <p class="text-sm text-gray-600">Already have an account? <a href="javascript:void(0)" class="text-orange-500 hover:text-orange-600" onclick="showPage('login')">Login</a></p>
+              <button type="submit" class="btn-primary">Register</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Login Page -->
+      <div id="login-page" class="hidden">
+        <h1 class="text-2xl font-bold mb-6">Login to Your Account</h1>
+        <div class="card max-w-md mx-auto">
+          <form id="login-form">
+            <div class="mb-4">
+              <label class="block text-gray-700 mb-2" for="email">Email Address</label>
+              <input type="email" id="login-email" class="form-input" placeholder="you@example.com" required>
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 mb-2" for="password">Password</label>
+              <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+            </div>
+            <div class="flex justify-between items-center">
+              <p class="text-sm text-gray-600">Don't have an account? <a href="javascript:void(0)" class="text-orange-500 hover:text-orange-600" onclick="showPage('register')">Register</a></p>
+              <button type="submit" class="btn-primary">Login</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Profile Page -->
+      <div id="profile-page" class="hidden">
+        <h1 class="text-2xl font-bold mb-6">My Profile</h1>
+        <div class="card max-w-md mx-auto">
+          <form id="profile-form">
+            <div class="mb-4">
+              <label class="block text-gray-700 mb-2" for="profile-email">Email Address</label>
+              <input type="email" id="profile-email" class="form-input" placeholder="you@example.com" required>
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 mb-2" for="current-password">Current Password</label>
+              <input type="password" id="current-password" class="form-input" placeholder="Required to change password">
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 mb-2" for="new-password">New Password (optional)</label>
+              <input type="password" id="new-password" class="form-input" placeholder="Leave blank to keep current password">
+            </div>
+            <div class="flex justify-end gap-3 items-center">
+              <button type="button" class="btn-secondary" id="logout-btn">Logout</button>
+              <button type="submit" class="btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Addresses Page -->
+      <div id="addresses-page" class="hidden">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-2xl font-bold">My Addresses</h1>
+          <button id="add-address-btn" class="btn-primary">
+            <i class="fas fa-plus mr-2"></i> Add Address
+          </button>
+        </div>
+        <div id="addresses-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Addresses will be loaded here -->
+          <div class="flex items-center justify-center p-12 text-gray-500">
+            <p>Loading addresses...</p>
+          </div>
+        </div>
+
+        <!-- Address Modal -->
+        <div id="address-modal" class="modal hidden">
+          <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-semibold" id="address-modal-title">Add New Address</h3>
+              <button id="close-address-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <form id="address-form">
+              <input type="hidden" id="address-id">
+              <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="address-name">Name</label>
+                <input type="text" id="address-name" class="form-input" placeholder="Home, Office, etc." required>
+              </div>
+              <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="address-line1">Address Line 1</label>
+                <input type="text" id="address-line1" class="form-input" placeholder="Street address" required>
+              </div>
+              <div class="mb-4">
+                <label class="block text-gray-700 mb-2" for="address-line2">Address Line 2</label>
+                <input type="text" id="address-line2" class="form-input" placeholder="Apt, Suite, etc. (optional)">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="mb-4">
+                  <label class="block text-gray-700 mb-2" for="address-city">City</label>
+                  <input type="text" id="address-city" class="form-input" placeholder="City" required>
+                </div>
+                <div class="mb-4">
+                  <label class="block text-gray-700 mb-2" for="address-state">State</label>
+                  <input type="text" id="address-state" class="form-input" placeholder="State" required>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="mb-4">
+                  <label class="block text-gray-700 mb-2" for="address-zip">ZIP Code</label>
+                  <input type="text" id="address-zip" class="form-input" placeholder="ZIP" required>
+                </div>
+                <div class="mb-4">
+                  <label class="block text-gray-700 mb-2" for="address-country">Country</label>
+                  <input type="text" id="address-country" class="form-input" placeholder="Country" required>
+                </div>
+              </div>
+              <div class="flex justify-end gap-3">
+                <button type="button" class="btn-secondary" id="cancel-address">Cancel</button>
+                <button type="submit" class="btn-primary">Save Address</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Page -->
+      <div id="products-page" class="hidden">
+        <h1 class="text-2xl font-bold mb-6">Products</h1>
+        <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <!-- Products will be loaded here -->
+          <div class="flex items-center justify-center p-12 col-span-full text-gray-500">
+            <p>Loading products...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cart Page -->
+      <div id="cart-page" class="hidden">
+        <h1 class="text-2xl font-bold mb-6">Shopping Cart</h1>
+        <div class="card">
+          <div id="cart-items-container">
+            <!-- Cart items will be loaded here -->
+            <div class="flex items-center justify-center p-12 text-gray-500">
+              <p>Loading cart items...</p>
+            </div>
+          </div>
+          <div class="border-t border-gray-200 mt-6 pt-6">
+            <div class="flex justify-between items-center">
+              <span class="text-xl font-semibold">Checkout Total</span>
+              <span class="text-2xl font-bold text-orange-600" id="cart-total">$0.00</span>
+            </div>
+            <div class="mt-6 text-center">
+              <button class="btn-primary px-8 py-3">Proceed to Checkout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg flex items-center">
+          <div class="spinner mr-3">
+            <i class="fas fa-circle-notch text-orange-500 text-2xl"></i>
+          </div>
+          <span class="text-gray-800 font-medium">Loading...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script id="app-script">
+    // Global variables
+    let currentPage = 'login';
+    let isAuthenticated = false;
+
+    // Check if user is logged in
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      isAuthenticated = !!token;
+      updateAuthDisplay();
+      
+      // Redirect to login if not authenticated
+      if (!isAuthenticated && !['login', 'register'].includes(currentPage)) {
+        showPage('login');
+      }
+    }
+
+    // Update auth display
+    function updateAuthDisplay() {
+      const authControls = document.getElementById('auth-controls');
+      
+      if (isAuthenticated) {
+        authControls.innerHTML = `
+          <button id="header-logout-btn" class="btn-secondary">
+            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+          </button>
+        `;
+        document.getElementById('header-logout-btn').addEventListener('click', handleLogout);
+      } else {
+        authControls.innerHTML = `
+          <button class="btn-primary" onclick="showPage('login')">
+            <i class="fas fa-sign-in-alt mr-2"></i> Login
+          </button>
+        `;
+      }
+
+      // Update sidebar active state
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.dataset.page === currentPage) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    // Show a specific page
+    function showPage(page) {
+      // Hide all pages
+      document.querySelectorAll('[id$="-page"]').forEach(element => {
+        element.classList.add('hidden');
+      });
+      
+      // Show requested page
+      document.getElementById(`${page}-page`).classList.remove('hidden');
+      currentPage = page;
+      
+      // Update active navigation
+      updateAuthDisplay();
+      
+      // Load page-specific data
+      switch(page) {
+        case 'profile':
+          if (isAuthenticated) loadProfile();
+          break;
+        case 'addresses':
+          if (isAuthenticated) loadAddresses();
+          break;
+        case 'products':
+          loadProducts();
+          break;
+        case 'cart':
+          if (isAuthenticated) loadCart();
+          break;
+      }
+    }
+
+    // Show loading overlay
+    function showLoading() {
+      document.getElementById('loading-overlay').classList.remove('hidden');
+    }
+
+    // Hide loading overlay
+    function hideLoading() {
+      document.getElementById('loading-overlay').classList.add('hidden');
+    }
+
+    // Show error message
+    function showError(message) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: message,
+        confirmButtonColor: '#f97316'
+      });
+    }
+
+    // Show success message
+    function showSuccess(message) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: message,
+        confirmButtonColor: '#f97316'
+      });
+    }
+
+    // Handle form submission with loading state
+    async function handleFormSubmit(form, callback) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        showLoading();
+        try {
+          await callback();
+        } catch (error) {
+          showError(error.message || 'An unexpected error occurred');
+        } finally {
+          hideLoading();
+        }
+      });
+    }
+
+    // Handle registration
+    async function handleRegister() {
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      
+      if (password !== confirmPassword) {
+        showError('Passwords do not match');
+        return;
+      }
+      
+      try {
+        // For prototype, just simulate registration
+        showSuccess('Registration successful! Please log in.');
+        showPage('login');
+      } catch (error) {
+        showError('Registration failed: ' + error.message);
+      }
+    }
+
+    // Handle login
+    async function handleLogin() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      
+      try {
+        // For prototype, just simulate login
+        const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ';
+        localStorage.setItem('token', mockToken);
+        localStorage.setItem('user_email', email);
+        
+        isAuthenticated = true;
+        updateAuthDisplay();
+        showSuccess('Login successful!');
+        showPage('products');
+      } catch (error) {
+        showError('Login failed: ' + error.message);
+      }
+    }
+
+    // Handle logout
+    function handleLogout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user_email');
+      isAuthenticated = false;
+      updateAuthDisplay();
+      showPage('login');
+      showSuccess('You have been logged out');
+    }
+
+    // Load profile
+    function loadProfile() {
+      const email = localStorage.getItem('user_email') || 'user@example.com';
+      document.getElementById('profile-email').value = email;
+    }
+
+    // Handle profile update
+    async function handleProfileUpdate() {
+      const email = document.getElementById('profile-email').value;
+      const currentPassword = document.getElementById('current-password').value;
+      const newPassword = document.getElementById('new-password').value;
+      
+      if (newPassword && !currentPassword) {
+        showError('Current password is required to change password');
+        return;
+      }
+      
+      try {
+        // For prototype, just update the local storage
+        localStorage.setItem('user_email', email);
+        showSuccess('Profile updated successfully');
+      } catch (error) {
+        showError('Profile update failed: ' + error.message);
+      }
+    }
+
+    // Load addresses
+    function loadAddresses() {
+      const addressesContainer = document.getElementById('addresses-container');
+      
+      // For prototype, show mock addresses
+      addressesContainer.innerHTML = `
+        <div class="card">
+          <div class="flex justify-between mb-3">
+            <h3 class="font-semibold text-lg">Home</h3>
+            <div>
+              <button class="text-gray-500 hover:text-orange-500 mr-2 edit-address" data-id="1">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="text-gray-500 hover:text-red-500 delete-address" data-id="1">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </div>
+          <p class="text-gray-700">123 Main Street</p>
+          <p class="text-gray-700">Apt 4B</p>
+          <p class="text-gray-700">New York, NY 10001</p>
+          <p class="text-gray-700">United States</p>
+        </div>
+        <div class="card">
+          <div class="flex justify-between mb-3">
+            <h3 class="font-semibold text-lg">Office</h3>
+            <div>
+              <button class="text-gray-500 hover:text-orange-500 mr-2 edit-address" data-id="2">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="text-gray-500 hover:text-red-500 delete-address" data-id="2">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </div>
+          <p class="text-gray-700">456 Business Ave</p>
+          <p class="text-gray-700">Suite 200</p>
+          <p class="text-gray-700">San Francisco, CA 94107</p>
+          <p class="text-gray-700">United States</p>
+        </div>
+      `;
+      
+      // Add event listeners to buttons
+      document.querySelectorAll('.edit-address').forEach(button => {
+        button.addEventListener('click', () => openAddressModal(button.dataset.id));
+      });
+      
+      document.querySelectorAll('.delete-address').forEach(button => {
+        button.addEventListener('click', () => deleteAddress(button.dataset.id));
+      });
+    }
+
+    // Open address modal
+    function openAddressModal(id = null) {
+      const modal = document.getElementById('address-modal');
+      const modalTitle = document.getElementById('address-modal-title');
+      const form = document.getElementById('address-form');
+      
+      // Reset form
+      form.reset();
+      
+      if (id) {
+        // Edit existing address
+        modalTitle.textContent = 'Edit Address';
+        document.getElementById('address-id').value = id;
+        
+        // For prototype, fill with mock data
+        if (id === '1') {
+          document.getElementById('address-name').value = 'Home';
+          document.getElementById('address-line1').value = '123 Main Street';
+          document.getElementById('address-line2').value = 'Apt 4B';
+          document.getElementById('address-city').value = 'New York';
+          document.getElementById('address-state').value = 'NY';
+          document.getElementById('address-zip').value = '10001';
+          document.getElementById('address-country').value = 'United States';
+        } else if (id === '2') {
+          document.getElementById('address-name').value = 'Office';
+          document.getElementById('address-line1').value = '456 Business Ave';
+          document.getElementById('address-line2').value = 'Suite 200';
+          document.getElementById('address-city').value = 'San Francisco';
+          document.getElementById('address-state').value = 'CA';
+          document.getElementById('address-zip').value = '94107';
+          document.getElementById('address-country').value = 'United States';
+        }
+      } else {
+        // Add new address
+        modalTitle.textContent = 'Add New Address';
+        document.getElementById('address-id').value = '';
+      }
+      
+      modal.classList.remove('hidden');
+    }
+
+    // Close address modal
+    function closeAddressModal() {
+      document.getElementById('address-modal').classList.add('hidden');
+    }
+
+    // Handle address form submission
+    async function handleAddressSubmit() {
+      const id = document.getElementById('address-id').value;
+      const name = document.getElementById('address-name').value;
+      
+      try {
+        // For prototype, just simulate API call
+        showSuccess(`Address ${id ? 'updated' : 'added'} successfully`);
+        closeAddressModal();
+        loadAddresses(); // Reload addresses
+      } catch (error) {
+        showError(`Failed to ${id ? 'update' : 'add'} address: ${error.message}`);
+      }
+    }
+
+    // Delete address
+    async function deleteAddress(id) {
+      // Confirm deletion
+      const result = await Swal.fire({
+        title: 'Delete Address',
+        text: 'Are you sure you want to delete this address?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f97316',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, delete it!'
+      });
+      
+      if (result.isConfirmed) {
+        showLoading();
+        try {
+          // For prototype, just simulate API call
+          showSuccess('Address deleted successfully');
+          loadAddresses(); // Reload addresses
+        } catch (error) {
+          showError('Failed to delete address: ' + error.message);
+        } finally {
+          hideLoading();
+        }
+      }
+    }
+
+    // Load products
+    function loadProducts() {
+      const productsContainer = document.getElementById('products-container');
+      
+      // For prototype, show mock products
+      productsContainer.innerHTML = `
+        <div class="product-card">
+          <div class="product-image-container relative">
+            <img src="https://cdn.pixabay.com/photo/2016/03/27/22/16/fashion-1284496_1280.jpg" alt="Classic T-Shirt" class="w-full h-56 object-cover">
+            <button class="upload-btn">
+              <i class="fas fa-camera mr-1"></i> Upload Image
+            </button>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-center mb-2">
+              <h3 class="font-semibold text-lg">Classic T-Shirt</h3>
+              <span class="text-orange-600 font-bold">$24.99</span>
+            </div>
+            <p class="text-gray-600 text-sm">100% cotton, classic fit t-shirt</p>
+            <button class="mt-4 w-full btn-primary add-to-cart" data-id="1">
+              Add to Cart
+            </button>
+          </div>
+        </div>
+        
+        <div class="product-card">
+          <div class="product-image-container relative">
+            <img src="https://cdn.pixabay.com/photo/2017/05/13/12/40/fashion-2309519_1280.jpg" alt="Denim Jacket" class="w-full h-56 object-cover">
+            <button class="upload-btn">
+              <i class="fas fa-camera mr-1"></i> Upload Image
+            </button>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-center mb-2">
+              <h3 class="font-semibold text-lg">Denim Jacket</h3>
+              <span class="text-orange-600 font-bold">$89.99</span>
+            </div>
+            <p class="text-gray-600 text-sm">Premium denim jacket, relaxed fit</p>
+            <button class="mt-4 w-full btn-primary add-to-cart" data-id="2">
+              Add to Cart
+            </button>
+          </div>
+        </div>
+        
+        <div class="product-card">
+          <div class="product-image-container relative">
+            <img src="https://cdn.pixabay.com/photo/2019/07/27/21/42/sunglasses-4367577_1280.jpg" alt="Sunglasses" class="w-full h-56 object-cover">
+            <button class="upload-btn">
+              <i class="fas fa-camera mr-1"></i> Upload Image
+            </button>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-center mb-2">
+              <h3 class="font-semibold text-lg">Aviator Sunglasses</h3>
+              <span class="text-orange-600 font-bold">$49.99</span>
+            </div>
+            <p class="text-gray-600 text-sm">Classic aviator style with UV protection</p>
+            <button class="mt-4 w-full btn-primary add-to-cart" data-id="3">
+              Add to Cart
+            </button>
+          </div>
+        </div>
+        
+        <div class="product-card">
+          <div class="product-image-container relative">
+            <img src="https://cdn.pixabay.com/photo/2016/11/19/18/06/feet-1840619_1280.jpg" alt="Sneakers" class="w-full h-56 object-cover">
+            <button class="upload-btn">
+              <i class="fas fa-camera mr-1"></i> Upload Image
+            </button>
+          </div>
+          <div class="p-4">
+            <div class="flex justify-between items-center mb-2">
+              <h3 class="font-semibold text-lg">Urban Sneakers</h3>
+              <span class="text-orange-600 font-bold">$79.99</span>
+            </div>
+            <p class="text-gray-600 text-sm">Comfortable urban style sneakers</p>
+            <button class="mt-4 w-full btn-primary add-to-cart" data-id="4">
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      `;
+      
+      // Add event listeners to buttons
+      document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', () => addToCart(button.dataset.id));
+      });
+
+      document.querySelectorAll('.upload-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          Swal.fire({
+            title: 'Upload Image',
+            text: 'This feature will be connected to a real API endpoint in the final version.',
+            icon: 'info',
+            confirmButtonColor: '#f97316'
+          });
+        });
+      });
+    }
+
+    // Add to cart
+    async function addToCart(productId) {
+      if (!isAuthenticated) {
+        showError('Please login to add items to cart');
+        showPage('login');
+        return;
+      }
+      
+      showLoading();
+      try {
+        // For prototype, just simulate API call
+        showSuccess('Product added to cart');
+      } catch (error) {
+        showError('Failed to add product to cart: ' + error.message);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // Load cart
+    function loadCart() {
+      const cartContainer = document.getElementById('cart-items-container');
+      
+      // For prototype, show mock cart items
+      cartContainer.innerHTML = `
+        <div class="flex flex-col">
+          <div class="flex items-center py-4 border-b border-gray-100">
+            <div class="w-20 h-20 flex-shrink-0">
+              <img src="https://cdn.pixabay.com/photo/2016/03/27/22/16/fashion-1284496_1280.jpg" alt="Classic T-Shirt" class="w-full h-full object-cover rounded">
+            </div>
+            <div class="ml-4 flex-grow">
+              <h3 class="font-medium">Classic T-Shirt</h3>
+              <p class="text-gray-600 text-sm">100% cotton, classic fit</p>
+              <div class="flex justify-between items-center mt-2">
+                <div class="flex items-center">
+                  <button class="px-2 py-1 border border-gray-300 rounded-l hover:bg-gray-100 decrease-qty" data-id="1">-</button>
+                  <input type="number" value="1" min="1" class="w-12 text-center border-t border-b border-gray-300 item-qty" data-id="1">
+                  <button class="px-2 py-1 border border-gray-300 rounded-r hover:bg-gray-100 increase-qty" data-id="1">+</button>
+                </div>
+                <div class="ml-4">
+                  <span class="text-orange-600 font-semibold item-price" data-price="24.99">$24.99</span>
+                </div>
+              </div>
+            </div>
+            <button class="ml-4 text-gray-500 hover:text-red-500 remove-from-cart" data-id="1">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+          
+          <div class="flex items-center py-4 border-b border-gray-100">
+            <div class="w-20 h-20 flex-shrink-0">
+              <img src="https://cdn.pixabay.com/photo/2019/07/27/21/42/sunglasses-4367577_1280.jpg" alt="Aviator Sunglasses" class="w-full h-full object-cover rounded">
+            </div>
+            <div class="ml-4 flex-grow">
+              <h3 class="font-medium">Aviator Sunglasses</h3>
+              <p class="text-gray-600 text-sm">Classic aviator style with UV protection</p>
+              <div class="flex justify-between items-center mt-2">
+                <div class="flex items-center">
+                  <button class="px-2 py-1 border border-gray-300 rounded-l hover:bg-gray-100 decrease-qty" data-id="3">-</button>
+                  <input type="number" value="1" min="1" class="w-12 text-center border-t border-b border-gray-300 item-qty" data-id="3">
+                  <button class="px-2 py-1 border border-gray-300 rounded-r hover:bg-gray-100 increase-qty" data-id="3">+</button>
+                </div>
+                <div class="ml-4">
+                  <span class="text-orange-600 font-semibold item-price" data-price="49.99">$49.99</span>
+                </div>
+              </div>
+            </div>
+            <button class="ml-4 text-gray-500 hover:text-red-500 remove-from-cart" data-id="3">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      
+      // Add event listeners
+      document.querySelectorAll('.decrease-qty').forEach(button => {
+        button.addEventListener('click', () => updateCartQuantity(button.dataset.id, 'decrease'));
+      });
+      
+      document.querySelectorAll('.increase-qty').forEach(button => {
+        button.addEventListener('click', () => updateCartQuantity(button.dataset.id, 'increase'));
+      });
+      
+      document.querySelectorAll('.item-qty').forEach(input => {
+        input.addEventListener('change', () => updateCartQuantity(input.dataset.id, 'set', input.value));
+      });
+      
+      document.querySelectorAll('.remove-from-cart').forEach(button => {
+        button.addEventListener('click', () => removeFromCart(button.dataset.id));
+      });
+      
+      // Update total
+      updateCartTotal();
+    }
+
+    // Update cart quantity
+    function updateCartQuantity(itemId, action, value = null) {
+      const qtyInput = document.querySelector(`.item-qty[data-id="${itemId}"]`);
+      let currentQty = parseInt(qtyInput.value);
+      
+      switch(action) {
+        case 'decrease':
+          if (currentQty > 1) {
+            currentQty--;
+          }
+          break;
+        case 'increase':
+          currentQty++;
+          break;
+        case 'set':
+          currentQty = parseInt(value);
+          break;
+      }
+      
+      qtyInput.value = currentQty;
+      updateCartTotal();
+    }
+
+    // Remove from cart
+    async function removeFromCart(itemId) {
+      // Confirm removal
+      const result = await Swal.fire({
+        title: 'Remove Item',
+        text: 'Are you sure you want to remove this item from your cart?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f97316',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, remove it!'
+      });
+      
+      if (result.isConfirmed) {
+        showLoading();
+        try {
+          // For prototype, just remove the element from DOM
+          const itemElement = document.querySelector(`.remove-from-cart[data-id="${itemId}"]`).closest('.flex.items-center');
+          itemElement.remove();
+          updateCartTotal();
+          showSuccess('Item removed from cart');
+        } catch (error) {
+          showError('Failed to remove item from cart: ' + error.message);
+        } finally {
+          hideLoading();
+        }
+      }
+    }
+
+    // Update cart total
+    function updateCartTotal() {
+      let total = 0;
+      
+      document.querySelectorAll('.item-price').forEach(priceElement => {
+        const itemId = priceElement.closest('.flex.items-center').querySelector('.item-qty').dataset.id;
+        const price = parseFloat(priceElement.dataset.price);
+        const quantity = parseInt(document.querySelector(`.item-qty[data-id="${itemId}"]`).value);
+        total += price * quantity;
+      });
+      
+      document.getElementById('cart-total').textContent = `$${total.toFixed(2)}`;
+    }
+
+    // Initialize the app
+    function initApp() {
+      // Set up navigation
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+          const page = link.dataset.page;
+          if (!isAuthenticated && !['login', 'register'].includes(page)) {
+            showError('Please log in to access this page');
+            showPage('login');
+            return;
+          }
+          showPage(page);
+        });
+      });
+      
+      // Register form handling
+      handleFormSubmit(document.getElementById('register-form'), handleRegister);
+      
+      // Login form handling
+      handleFormSubmit(document.getElementById('login-form'), handleLogin);
+      
+      // Profile form handling
+      handleFormSubmit(document.getElementById('profile-form'), handleProfileUpdate);
+      
+      // Logout buttons
+      document.getElementById('logout-btn').addEventListener('click', handleLogout);
+      
+      // Address modal controls
+      document.getElementById('add-address-btn').addEventListener('click', () => openAddressModal());
+      document.getElementById('close-address-modal').addEventListener('click', closeAddressModal);
+      document.getElementById('cancel-address').addEventListener('click', closeAddressModal);
+      
+      // Address form handling
+      handleFormSubmit(document.getElementById('address-form'), handleAddressSubmit);
+      
+      // Check authentication status
+      checkAuth();
+      
+      // Show initial page
+      showPage('login');
+    }
+    
+    // Run app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
