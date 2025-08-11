@@ -14,6 +14,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"backend/config"
 )
 
 // main - initializes everything and starts the HTTP server
@@ -53,7 +54,7 @@ func configLoad() (*Config, error) {
 		1. Call config.LoadConfigFromEnv
 		2. Return Config or an error
 	*/
-	return LoadConfigFromEnv()
+	return config.LoadConfigFromEnv()
 }
 
 func openDatabase(cfg *Config) (*gorm.DB, error) {
