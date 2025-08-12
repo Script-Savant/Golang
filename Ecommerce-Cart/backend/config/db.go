@@ -5,7 +5,7 @@
 3. Seed sample products
 */
 
-package main
+package config
 
 import (
 	"log"
