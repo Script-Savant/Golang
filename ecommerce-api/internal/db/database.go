@@ -9,6 +9,7 @@ package db
 
 import (
 	"ecommerce-api/internal/config"
+	"ecommerce-api/internal/models"
 	"fmt"
 	"log"
 
@@ -18,7 +19,7 @@ import (
 
 var DB *gorm.DB
 
-func initializeDB(cfg *config.Config) (*gorm.DB, error) {
+func InitializeDB(cfg *config.Config) (*gorm.DB, error) {
 	// 1. Create DSN (Data Source Name)
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC", cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort)
 

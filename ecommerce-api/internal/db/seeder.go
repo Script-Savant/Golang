@@ -7,7 +7,10 @@ Seed sample products into the db
 
 package db
 
-import "log"
+import (
+	"ecommerce-api/internal/models"
+	"log"
+)
 
 func SeedProducts() {
 	// 1. Check if products already exist
