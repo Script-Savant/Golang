@@ -4,7 +4,7 @@ Manage configuration - env variables
 2. expose Config struct: DSN, JWT_SECRET, PORT, BCRYPT_CONST
 */
 
-package main
+package config
 
 import (
 	"errors"
