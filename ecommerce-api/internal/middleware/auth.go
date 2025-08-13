@@ -18,42 +18,46 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 1. Get token from authorization header
+		// 1. Get and validate authorization header
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Autorization header missing"})
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			unauthorized(c, "Authorization header missing")
 			return
 		}
 
-		// 2. check if header has a bearer prefix
-		tokenParts := strings.Split(authHeader, " ")
-		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
-			return
-		}
-
-		tokenString := tokenParts[1]
+		// 2. Extract token string
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		// 3. parse and validate token
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			// validate signing method
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		secret := []byte(config.LoadConfig().JWTSecret)
+		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
 			}
-			return []byte(config.LoadConfig().JWTSecret), nil
+			return secret, nil
 		})
 		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			unauthorized(c, "Invalid token")
 			return
 		}
 
-		// 4. Extract claims and set user ID in context
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			userID := uint(claims["user_id"].(float64))
-			c.Set("userID", userID)
-			c.Next()
+		// 4. Extract claims
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			unauthorized(c, "Invalid token claims")
 			return
 		}
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid claims"})
+
+		// 5. Set user ID in context
+		if uid, ok := claims["user_id"].(float64); ok {
+			c.Set("userID", uint(uid))
+			c.Next()
+		} else {
+			unauthorized(c, "User ID not found in token")
+		}
 	}
+}
+
+func unauthorized(c *gin.Context, msg string) {
+	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": msg})
 }
