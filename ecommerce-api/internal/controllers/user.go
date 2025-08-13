@@ -33,7 +33,7 @@ func NewUserController(db *gorm.DB) *UserController {
 
 func (uc *UserController) GetProfile(c *gin.Context) {
 	// 1. Get user id from context
-	userID, exists := c.Get("user_id")
+	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -54,4 +54,46 @@ func (uc *UserController) GetProfile(c *gin.Context) {
 		"CreatedAt": user.CreatedAt,
 		"addresses": user.Addresses,
 	})
+}
+
+func (uc *UserController) AddAddress(c *gin.Context) {
+	// 1. Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// 2. Bind and validate input
+	var input AddressInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 3. If setting as default, unset any existing default address
+	if input.IsDefault {
+		uc.DB.Model(&models.Address{}).
+			Where("user_id = ? AND is_default = true", userID).
+			Update("is_default", false)
+	}
+
+	// 4. Create new address
+	address := models.Address{
+		UserID:    userID.(uint),
+		Street:    input.Street,
+		City:      input.City,
+		State:     input.State,
+		ZipCode:   input.ZipCode,
+		Country:   input.Country,
+		IsDefault: input.IsDefault,
+	}
+
+	if err := uc.DB.Create(&address).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create address"})
+		return
+	}
+
+	// 5. Return created address
+	c.JSON(http.StatusCreated, address)
 }
