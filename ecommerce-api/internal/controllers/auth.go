@@ -7,10 +7,13 @@ Handle user authentication - regiter and login
 package controllers
 
 import (
+	"ecommerce-api/internal/config"
 	"ecommerce-api/internal/models"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 )
 
@@ -73,6 +76,50 @@ func (ac *AuthController) Register(c *gin.Context) {
 			"id":    newUser.ID,
 			"name":  newUser.Name,
 			"email": newUser.Email,
+		},
+	})
+}
+
+func (ac *AuthController) Login(c *gin.Context) {
+	// 1. bind and validate input
+	var input LoginInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 2. Find user by email
+	var user models.User
+	if err := ac.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	// 3. Verify password
+	if err := user.VerifyPassword(input.Password); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	// 4. Generate JWT Token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(config.LoadConfig().JWTSecret))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"token":   tokenString,
+		"expires": time.Now().Add(time.Hour * 24).Unix(),
+		"user": gin.H{
+			"id":    user.ID,
+			"name":  user.Name,
+			"email": user.Email,
 		},
 	})
 }
