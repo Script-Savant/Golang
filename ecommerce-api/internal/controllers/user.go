@@ -164,3 +164,30 @@ func (uc *UserController) UpdateAddress(c *gin.Context) {
 	// 7. Return updated address
 	c.JSON(http.StatusOK, address)
 }
+
+func (uc *UserController) DeleteAddress(c *gin.Context) {
+	// 1. Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// 2. Get address ID from URL
+	addressID := c.Param("id")
+
+	// 3. Delete address
+	result := uc.DB.Where("id = ? AND user_id = ?", addressID, userID).Delete(&models.Address{})
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete address"})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Address not found"})
+		return
+	}
+
+	// 4. Return success
+	c.JSON(http.StatusOK, gin.H{"message": "Address deleted successfully"})
+}
