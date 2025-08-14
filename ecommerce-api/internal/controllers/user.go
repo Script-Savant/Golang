@@ -97,3 +97,21 @@ func (uc *UserController) AddAddress(c *gin.Context) {
 	// 5. Return created address
 	c.JSON(http.StatusCreated, address)
 }
+
+func (uc *UserController) GetAddresses(c *gin.Context) {
+	// 1. Get user id from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// 2. Get all addresses for user
+	var addresses []models.Addresses
+	if err := uc.DB.Where("user_id = ?", userID).Find(&addresses).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch addresses"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"addresses": addresses})
+}
