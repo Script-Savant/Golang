@@ -115,3 +115,52 @@ func (uc *UserController) GetAddresses(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"addresses": addresses})
 }
+
+func (uc *UserController) UpdateAddress(c *gin.Context) {
+	// 1. Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// 2. Get address ID from URL
+	addressID := c.Param("id")
+
+	// 3. Find address
+	var address models.Address
+	if err := uc.DB.Where("id = ? AND user_id = ?", addressID, userID).First(&address).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Address not found"})
+		return
+	}
+
+	// 4. Bind and validate input
+	var input AddressInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 5. If setting as default, unset any existing default address
+	if input.IsDefault {
+		uc.DB.Model(&models.Address{}).
+			Where("user_id = ? AND is_default = true AND id != ?", userID, addressID).
+			Update("is_default", false)
+	}
+
+	// 6. Update address
+	address.Street = input.Street
+	address.City = input.City
+	address.State = input.State
+	address.ZipCode = input.ZipCode
+	address.Country = input.Country
+	address.IsDefault = input.IsDefault
+
+	if err := uc.DB.Save(&address).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update address"})
+		return
+	}
+
+	// 7. Return updated address
+	c.JSON(http.StatusOK, address)
+}
