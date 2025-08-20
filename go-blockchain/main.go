@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"go-blockchain/block"
+	// "go-blockchain/block"
+	"go-blockchain/wallet"
 	"log"
 )
 
@@ -11,21 +12,7 @@ func init() {
 }
 
 func main() {
-	myBlockchainAddress := "alex"
-	bc := block.NewBlockchain(myBlockchainAddress)
-	bc.Print()
-
-	bc.AddTransaction("A", "B", 1.0)
-	bc.Mining()
-	bc.Print()
-
-	bc.AddTransaction("C", "D", 2.0)
-	bc.AddTransaction("x", "Y", 3.0)
-	bc.Mining()
-	bc.Print()
-
-	fmt.Printf("my %.1f\n", bc.CalculateTotalAmount("alex"))
-	fmt.Printf("C %.1f\n", bc.CalculateTotalAmount("C"))
-	fmt.Printf("D %.1f\n", bc.CalculateTotalAmount("D"))
-
+	w := wallet.NeWallet()
+	fmt.Println(w.PrivateKeyStr())
+	fmt.Println(w.PublicKeyStr())
 }
