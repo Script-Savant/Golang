@@ -1,0 +1,42 @@
+{{template "base.html" .}}
+
+{{define "title"}}Edit Post - Blog App{{end}}
+
+{{define "content"}}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2>Edit Post</h2>
+        {{if .error}}
+        <div class="alert alert-danger">{{.error}}</div>
+        {{end}}
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="title" name="title" value="{{.post.Title}}" required>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">Content</label>
+                <textarea class="form-control" id="content" name="content" rows="6" required>{{.post.Content}}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="image" class="form-label">Image (optional)</label>
+                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                {{if .post.ImagePath}}
+                <div class="mt-2">
+                    <p>Current image:</p>
+                    <img src="{{.post.ImagePath}}" alt="Current post image" class="img-thumbnail" style="max-height: 200px;">
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="removeImage" name="removeImage">
+                        <label class="form-check-label" for="removeImage">
+                            Remove current image
+                        </label>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+            <button type="submit" class="btn btn-primary">Update Post</button>
+            <a href="/post/{{.post.ID}}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{{end}}
