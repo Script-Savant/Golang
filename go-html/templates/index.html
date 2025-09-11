@@ -1,0 +1,30 @@
+{{template "base.html" .}}
+
+{{define "title"}}Home - Blog App{{end}}
+
+{{define "content"}}
+<div class="row">
+    <div class="col-md-8">
+        <h1>Latest Posts</h1>
+        {{range .posts}}
+        <div class="card mb-4">
+            {{if .ImagePath}}
+            <img src="{{.ImagePath}}" class="card-img-top" alt="{{.Title}}">
+            {{end}}
+            <div class="card-body">
+                <h2 class="card-title">
+                    <a href="/post/{{.ID}}" class="text-decoration-none">{{.Title}}</a>
+                </h2>
+                <p class="text-muted">
+                    By {{.Author.Username}} on {{.CreatedAt | formatDate}}
+                </p>
+                <p class="card-text">{{slice .Content 0 200}}...</p>
+                <a href="/post/{{.ID}}" class="btn btn-primary">Read More</a>
+            </div>
+        </div>
+        {{else}}
+        <p>No posts yet. Be the first to create one!</p>
+        {{end}}
+    </div>
+</div>
+{{end}}
