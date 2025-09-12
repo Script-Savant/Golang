@@ -1,26 +1,48 @@
-{{template "base.html" .}}
+
 
 {{define "title"}}Home - Blog App{{end}}
 
 {{define "content"}}
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-12">
         <h1>Latest Posts</h1>
         {{range .posts}}
-        <div class="card mb-4">
-            {{if .ImagePath}}
-            <img src="{{.ImagePath}}" class="card-img-top" alt="{{.Title}}">
-            {{end}}
-            <div class="card-body">
-                <h2 class="card-title">
-                    <a href="/post/{{.ID}}" class="text-decoration-none">{{.Title}}</a>
-                </h2>
-                <p class="text-muted">
-                    By {{.Author.Username}} on {{.CreatedAt | formatDate}}
-                </p>
-                <p class="card-text">{{slice .Content 0 200}}...</p>
-                <a href="/post/{{.ID}}" class="btn btn-primary">Read More</a>
+        <div class="card mb-4 shadow">
+            <div class="row g-0">
+                {{if .ImagePath}}
+                    <div class="col-md-4">
+                        <img src="{{.ImagePath}}" class="img-fluid rounded-start" alt="{{.Title}}">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h3 class="card-title">
+                                <a href="/posts/post/{{.ID}}" class="text-decoration-none text-dark text-capitalize">{{.Title}}</a>
+                            </h3>
+                            <p class="text-muted text-capitalize">
+                                By {{.Author.Username}} on {{formatDate .CreatedAt}}
+                            </p>
+                            <p class="card-text">{{slice .Content 0 200}}...</p>
+                            <a href="/posts/post/{{.ID}}" class="btn btn-primary">Read More</a>
+                        </div>
+                    </div>
+                {{else}}
+                <div class="col-md-12">
+
+                    <div class="card-body">
+                        <h2 class="card-title">
+                            <a href="/posts/post/{{.ID}}" class="text-decoration-none">{{.Title}}</a>
+                        </h2>
+                        <p class="text-muted">
+                            By {{.Author.Username}} on {{.CreatedAt}}
+                        </p>
+                        <p class="card-text">{{.Content}}...</p>
+                        <a href="/posts/post/{{.ID}}" class="btn btn-primary">Read More</a>
+                    </div>
+                </div>
+
+                {{end}}
             </div>
+            
         </div>
         {{else}}
         <p>No posts yet. Be the first to create one!</p>
@@ -28,3 +50,5 @@
     </div>
 </div>
 {{end}}
+
+

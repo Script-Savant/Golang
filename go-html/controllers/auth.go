@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"go-html/models"
 	"net/http"
 
@@ -16,7 +17,7 @@ func LoginPageHandler(c *gin.Context) {
 
 	// If user is already logged in, redirect to home
 	if userID != nil {
-		c.Redirect(http.StatusFound, "/")
+		c.Redirect(http.StatusFound, "/posts")
 		return
 	}
 
@@ -45,17 +46,18 @@ func LoginHandler(db *gorm.DB) gin.HandlerFunc {
 		session.Set("user_id", user.ID)
 		session.Save()
 
-		c.Redirect(http.StatusFound, "/")
+		c.Redirect(http.StatusFound, "/posts")
 	}
 }
 
 func RegisterPageHandler(c *gin.Context) {
+	fmt.Println(">>> RegisterPageHandler CALLED")
 	session := sessions.Default(c)
 	userID := session.Get("user_id")
 
 	// If user is already logged in, redirect to home
 	if userID != nil {
-		c.Redirect(http.StatusFound, "/")
+		c.Redirect(http.StatusFound, "/posts")
 		return
 	}
 
@@ -103,7 +105,7 @@ func RegisterHandler(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		c.HTML(http.StatusOK, "register.html", gin.H{"message": "User created successfully"})
-		c.Redirect(http.StatusFound, "/login")
+		c.Redirect(http.StatusFound, "/users/login")
 	}
 }
 
@@ -112,5 +114,5 @@ func LogoutHandler(c *gin.Context) {
 	session.Clear()
 	session.Save()
 
-	c.Redirect(http.StatusFound, "/")
+	c.Redirect(http.StatusFound, "/posts")
 }

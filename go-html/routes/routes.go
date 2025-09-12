@@ -8,28 +8,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
 func SetupRoutes(r *gin.Engine) {
 	db := config.DB
 
 	r.GET("/", controllers.IndexHandler(db))
-	r.GET("/post/:id", controllers.PostHandler(db))
 
-	// Auth routes
-	r.GET("/login", controllers.LoginPageHandler)
-    r.POST("/login", controllers.LoginHandler(db))
-    r.GET("/register", controllers.RegisterPageHandler)
-    r.POST("/register", controllers.RegisterHandler(db))
-    r.POST("/logout", controllers.LogoutHandler)
+	user := r.Group("/users")
+	{
+		// Auth routes
+		user.GET("/login", controllers.LoginPageHandler)
+		user.POST("/login", controllers.LoginHandler(db))
+		user.GET("/register", controllers.RegisterPageHandler)
+		user.POST("/register", controllers.RegisterHandler(db))
+		user.POST("/logout", controllers.LogoutHandler)
+	}
 
-	 // Protected routes
-    auth := r.Group("/")
-    auth.Use(middleware.AuthRequired())
-    {
-        auth.GET("/create", controllers.CreatePageHandler)
-        auth.POST("/create", controllers.CreatePostHandler(db))
-        auth.GET("/edit/:id", controllers.EditPageHandler(db))
-        auth.POST("/edit/:id", controllers.EditPostHandler(db))
-        auth.POST("/delete/:id", controllers.DeletePostHandler(db))
-    }
+	posts := r.Group("/posts")
+	{
+		posts.GET("/", controllers.IndexHandler(db))
+		posts.GET("/post/:id", controllers.PostHandler(db))
+
+		// Protected routes
+		posts.Use(middleware.AuthRequired())
+		{
+			posts.GET("/create", controllers.CreatePageHandler)
+			posts.POST("/create", controllers.CreatePostHandler(db))
+			posts.GET("/edit/:id", controllers.EditPageHandler(db))
+			posts.POST("/edit/:id", controllers.EditPostHandler(db))
+			posts.POST("/delete/:id", controllers.DeletePostHandler(db))
+		}
+	}
 }

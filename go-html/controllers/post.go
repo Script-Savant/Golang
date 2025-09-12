@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"go-html/middleware"
 	"go-html/models"
 	"io"
@@ -16,9 +17,13 @@ import (
 
 func IndexHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		fmt.Println(">>> IndexHandler CALLED")
 		var posts []models.Post
 
-		db.Preload("Author").Order("created_at desc").Find(&posts)
+		if err := db.Preload("Author").Order("created_at desc").Find(&posts).Error; err != nil {
+			c.HTML(http.StatusInternalServerError, "index", gin.H{"error": "Failed to fetch posts"})
+			return
+		}
 
 		c.HTML(http.StatusOK, "index.html", gin.H{"posts": posts, "user": middleware.GetCurrentUser(c, db)})
 	}
@@ -40,9 +45,9 @@ func PostHandler(db *gorm.DB) gin.HandlerFunc {
 }
 
 func CreatePageHandler(c *gin.Context) {
-	user := middleware.GetCurrentUser(c, nil) // We don't need db for this, just session check
+	user := middleware.GetCurrentUser(c, nil)
 	if user == nil {
-		c.Redirect(http.StatusFound, "/login")
+		c.Redirect(http.StatusFound, "/users/login")
 		return
 	}
 
@@ -55,7 +60,7 @@ func CreatePostHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := middleware.GetCurrentUser(c, db)
 		if user == nil {
-			c.Redirect(http.StatusFound, "/login")
+			c.Redirect(http.StatusFound, "/users/login")
 			return
 		}
 
@@ -115,7 +120,7 @@ func CreatePostHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.Redirect(http.StatusFound, "/")
+		c.Redirect(http.StatusFound, "/posts")
 	}
 }
 
@@ -123,7 +128,7 @@ func EditPageHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := middleware.GetCurrentUser(c, db)
 		if user == nil {
-			c.Redirect(http.StatusFound, "/login")
+			c.Redirect(http.StatusFound, "/users/login")
 			return
 		}
 
@@ -154,7 +159,7 @@ func EditPostHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := middleware.GetCurrentUser(c, db)
 		if user == nil {
-			c.Redirect(http.StatusFound, "/login")
+			c.Redirect(http.StatusFound, "/users/login")
 			return
 		}
 
@@ -239,7 +244,7 @@ func EditPostHandler(db *gorm.DB) gin.HandlerFunc {
 		post.Content = content
 
 		db.Save(&post)
-		c.Redirect(http.StatusFound, "/post/"+c.Param("id"))
+		c.Redirect(http.StatusFound, "/posts/post/"+c.Param("id"))
 	}
 }
 
@@ -247,7 +252,7 @@ func DeletePostHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := middleware.GetCurrentUser(c, db)
 		if user == nil {
-			c.Redirect(http.StatusFound, "/login")
+			c.Redirect(http.StatusFound, "users/login")
 			return
 		}
 
@@ -273,7 +278,7 @@ func DeletePostHandler(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		db.Delete(&post)
-		c.Redirect(http.StatusFound, "/")
+		c.Redirect(http.StatusFound, "/posts")
 	}
 }
 
