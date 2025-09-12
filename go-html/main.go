@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"go-html/config"
 	"go-html/routes"
-	"html/template"
-	"time"
+	"go-html/utils"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	// "github.com/gin-gonic/gin/render"
 )
 
 func main() {
@@ -24,12 +24,8 @@ func main() {
 	r.Use(sessions.Sessions("blog_session", store))
 
 	// Load templates
-	r.SetFuncMap(template.FuncMap{
-        "formatDate": func(t time.Time) string {
-            return t.Format("Jan 2, 2006")
-        },
-    })
-	r.LoadHTMLGlob("templates/*")
+
+	r.HTMLRender = utils.LoadTemplates()
 
 	// serve static files
 	r.Static("/static", "./static")
