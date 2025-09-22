@@ -11,20 +11,10 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
-	db, err := gorm.Open(sqlite.Open("go_mpesa.db"), &gorm.Config{})
+	var err error
+	DB, err = gorm.Open(sqlite.Open("transactions.db"), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Failed to make a  database connection")
+		log.Fatal("Failed to connect database:", err)
 	}
-	
-	if err := db.AutoMigrate(
-		&models.Transaction{},
-	); err != nil {
-		log.Fatal("Failed to migrate tables")
-	}
-
-	DB = db
-}
-
-func GetDB() *gorm.DB{
-	return DB
+	DB.AutoMigrate(&models.MpesaTransaction{})
 }

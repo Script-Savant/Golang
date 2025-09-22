@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mpesa C2B Test</title>
+</head>
+<body>
+  <h2>Pay with Mpesa (C2B)</h2>
+  <form id="c2bForm">
+    Phone: <input type="text" id="phone" value="2547XXXXXXXX"><br>
+    Amount: <input type="number" id="amount" value="10"><br>
+    <button type="submit">Pay</button>
+  </form>
+
+  <script>
+    document.getElementById("c2bForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      let phone = document.getElementById("phone").value;
+      let amount = document.getElementById("amount").value;
+
+      let res = await fetch("http://localhost:8080/c2b", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ phone, amount })
+      });
+      let data = await res.json();
+      alert(JSON.stringify(data, null, 2));
+    });
+  </script>
+</body>
+</html>
