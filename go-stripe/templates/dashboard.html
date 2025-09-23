@@ -1,0 +1,44 @@
+{{define "title"}}Dashboard - Payment App{{end}}
+
+{{define "content"}}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Welcome, {{.User.FirstName}}!</h2>
+        <div class="d-grid gap-2 d-md-block mb-4">
+            <a href="/send" class="btn btn-success">Send Money</a>
+        </div>
+
+        <h4>Recent Transactions</h4>
+        {{if .Transactions}}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Recipient</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Transactions}}
+                    <tr>
+                        <td>{{.RecipientEmail}}</td>
+                        <td>${{printf "%.2f" (.Amount 100.0)}}</td>
+                        <td>
+                            <span class="badge bg-{{if eq .Status "completed"}}success{{else}}warning{{end}}">
+                                {{.Status}}
+                            </span>
+                        </td>
+                        <td>{{.CreatedAt.Format "Jan 02, 2006"}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{else}}
+        <p>No transactions yet.</p>
+        {{end}}
+    </div>
+</div>
+{{end}}

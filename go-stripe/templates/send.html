@@ -1,0 +1,81 @@
+{{define "title"}}Send Money - Payment App{{end}}
+
+{{define "content"}}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Send Money</h4>
+            </div>
+            <div class="card-body">
+                <form id="payment-form">
+                    <div class="mb-3">
+                        <label for="recipientEmail" class="form-label">Recipient Email</label>
+                        <input type="email" class="form-control" id="recipientEmail" name="recipientEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount (USD)</label>
+                        <input type="number" class="form-control" id="amount" name="amount" min="1" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" id="submit-button">
+                        <span id="button-text">Pay Now</span>
+                        <span id="button-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const stripe = Stripe('{{.StripePublishableKey}}');
+    const form = document.getElementById('payment-form');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        const buttonSpinner = document.getElementById('button-spinner');
+        
+        // Show loading state
+        submitButton.disabled = true;
+        buttonText.classList.add('d-none');
+        buttonSpinner.classList.remove('d-none');
+
+        try {
+            const response = await fetch('/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(new FormData(form))
+            });
+
+            const session = await response.json();
+
+            if (session.error) {
+                alert(session.error);
+                return;
+            }
+
+            // Redirect to Stripe Checkout
+            const result = await stripe.redirectToCheckout({
+                sessionId: session.sessionId
+            });
+
+            if (result.error) {
+                alert(result.error.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            // Reset button state
+            submitButton.disabled = false;
+            buttonText.classList.remove('d-none');
+            buttonSpinner.classList.add('d-none');
+        }
+    });
+</script>
+{{end}}
