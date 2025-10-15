@@ -1,0 +1,35 @@
+{{define "title"}}Snippet #{{.snippet.ID}}{{end}}
+
+{{define "main"}}
+<div class="snippet">
+    {{if .error}}
+        <h3>{{.error}}</h3>
+    {{end}}
+    <form action="/snippet/view/{{.snippet.ID}}" method="post">
+        <div class="metadata">
+            <strong>Title:</strong>
+            <span>#{{.snippet.ID}}</span>
+            <input type="text" name="title" value="{{.snippet.Title}}" required>
+        </div>
+
+        <div class="metadata">
+            <strong>Content:</strong><br>
+            <textarea name="content" rows="8" cols="60" required>{{.snippet.Content}}</textarea>
+        </div>
+
+        <div class="metadata">
+            <label for="expires">Expires (in days):</label>
+            <input type="number" id="expires" name="expires" value="{{.snippet.ExpiresIn}}" min="1">
+        </div>
+
+        <div class="metadata">
+            <time>Created: {{.snippet.CreatedAt}}</time>
+            <time>Expires: {{.snippet.ExpiresAt}}</time>
+        </div>
+
+        <div class="metadata">
+            <button  type="submit">Update</button>
+        </div>
+    </form>
+</div>
+{{end}}

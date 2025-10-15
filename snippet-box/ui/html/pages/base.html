@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{block "title" .}} - Snippetbox{{end}}</title>
+
+    <link rel="stylesheet" href="/ui/static/css/main.css">
+    <link rel="shortcut icon" href="/ui/static/img/favicon.ico" type="image/x-icon">
+
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700'>
+
+</head>
+<body>
+    <header>
+        <span style="display: inline-block; font-size: large; font-weight: bold;">
+            <img src="/ui/static/img/logo.png" alt="logo">
+            <a href="/">Snippetbox</a>
+        </span>
+    </header>
+
+    <!-- nav -->
+    <nav>
+        {{if .user}}
+            <a href="/">Home</a>
+            <a href="/profile">Profile</a>
+            <a href="/logout">Logout</a>
+            <a href="#" style="color: black; font-weight: bolder;">{{.user.Username}}</a>
+        {{else}}
+            <a href="/register">Register</a>
+            <a href="/login">Login</a>
+        {{end}}
+    </nav>
+
+    <!-- sidebar -->
+     {{block "sidebar" .}}
+
+     {{end}}
+
+    <main>
+        {{block "main" .}}{{end}}
+    </main>
+
+    <footer>Powered by <a href="https://golang.org" target="_blank">Go</a></footer>
+
+    <script src="/ui/static/js/main.js" type="text/javascript"></script>
+    
+</body>
+</html>

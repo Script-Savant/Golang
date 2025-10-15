@@ -1,0 +1,39 @@
+{{define "title"}}Home{{end}}
+
+{{define "main"}}
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h2>Latest Snippets</h2>
+        <a href="/snippet/create">Create new snippet</a>
+    </div>
+
+
+    {{if .snippets}}
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Expiry Date</th>
+            <th>ID</th>
+            <th>Actions</th>
+        </tr>
+
+         {{range .snippets}}
+            <tr>
+                <td>{{.Title}}</td>
+                <td><small>Expires: {{.ExpiresAt}}</small></td>
+                <td>#{{.ID}}</td>
+                <td>
+                    <a href="/snippet/view/{{.ID}}">View</a>
+                    <form action="/snippet/delete/{{.ID}}" method="post">
+                        <button type="submit">Delete</button>
+                    </form> 
+                </td>
+            </tr>
+        {{end}}
+    </table>
+       
+    
+        
+    {{else}}
+    <p>There's nth to see here yet</p>
+    {{end}}
+{{end}}

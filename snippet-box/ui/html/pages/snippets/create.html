@@ -1,0 +1,32 @@
+{{define "title"}}New Snippet{{end}}
+
+{{define "main"}}
+    <h2>Create a New Snippet</h2>
+
+    {{if .error}}
+        <p style="color: red;">{{.error}}</p>
+    {{end}}
+
+    <form action="/snippet/create" method="post">
+        <div>
+            <label>Title:</label><br>
+            <input type="text" name="title" required>
+        </div>
+
+        <div>
+            <label>Content:</label><br>
+            <textarea name="content" rows="8" cols="60" required></textarea>
+        </div>
+
+        <div>
+            <label>Expires in:</label><br>
+            <input type="radio" name="expires" value="365"> One Year<br>
+            <input type="radio" name="expires" value="7"> One Week<br>
+            <input type="radio" name="expires" value="1" checked> One Day
+        </div>
+
+        <div style="margin-top: 10px;">
+            <input type="submit" value="Publish Snippet">
+        </div>
+    </form>
+{{end}}

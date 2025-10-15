@@ -1,0 +1,38 @@
+{{define "title"}}Profile{{end}}
+
+{{define "main"}}
+<h2>Your Profile</h2>
+
+{{if .error}}
+    <p style="color: red;">{{.error}}</p>
+{{end}}
+
+{{if .user}}
+    <p><strong>Username:</strong> {{.user.Username}}</p>
+{{end}}
+
+<form action="/profile" method="post">
+    <div>
+        <label>Current Password:</label><br>
+        <input type="password" name="oldPass" required>
+    </div>
+
+    <div>
+        <label>New Password:</label><br>
+        <input type="password" name="newPass" required>
+    </div>
+
+    <div>
+        <label>Confirm New Password:</label><br>
+        <input type="password" name="newPass2" required>
+    </div>
+
+    <div style="margin-top: 10px;">
+        <input type="submit" value="Update Password">
+    </div>
+</form>
+
+<p style="margin-top: 10px;">
+    <a href="/logout">Logout</a>
+</p>
+{{end}}
