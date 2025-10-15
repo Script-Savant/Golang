@@ -38,54 +38,53 @@ It’s designed for simplicity, security, and clean code organization — ideal 
 
 .
 ├── cmd
-│   └── web
-│       ├── config
-│       │   └── database .go
-│       ├── handlers
-│       │   ├── auth.go
-│       │   └── snippets.go
-│       ├── main.go
-│       ├── middleware
-│       │   └── auth.go
-│       ├── renderTemplates
-│       │   └── snippets.go
-│       ├── routes
-│       │   ├── auth.go
-│       │   └── snippets.go
-│       └── utils
-│           └── helpers.go
+│ └── web
+│ ├── config
+│ │ └── database.go
+│ ├── handlers
+│ │ ├── auth.go
+│ │ └── snippets.go
+│ ├── main.go
+│ ├── middleware
+│ │ └── auth.go
+│ ├── renderTemplates
+│ │ └── snippets.go
+│ ├── routes
+│ │ ├── auth.go
+│ │ └── snippets.go
+│ └── utils
+│ └── helpers.go
 ├── go.mod
 ├── go.sum
 ├── internal
-│   └── models
-│       ├── snippets.go
-│       └── user.go
+│ └── models
+│ ├── snippets.go
+│ └── user.go
 ├── README.md
 └── ui
-    ├── html
-    │   ├── pages
-    │   │   ├── auth
-    │   │   │   ├── login.html
-    │   │   │   ├── profile.html
-    │   │   │   └── register.html
-    │   │   ├── base.html
-    │   │   ├── error.html
-    │   │   └── snippets
-    │   │       ├── create.html
-    │   │       ├── home.html
-    │   │       └── view.html
-    │   └── partials
-    │       └── nav.html
-    └── static
-        ├── css
-        │   └── main.css
-        ├── img
-        │   ├── delete.svg
-        │   ├── favicon.ico
-        │   └── logo.png
-        └── js
-            └── main.js
-
+├── html
+│ ├── pages
+│ │ ├── auth
+│ │ │ ├── login.html
+│ │ │ ├── profile.html
+│ │ │ └── register.html
+│ │ ├── base.html
+│ │ ├── error.html
+│ │ └── snippets
+│ │ ├── create.html
+│ │ ├── home.html
+│ │ └── view.html
+│ └── partials
+│ └── nav.html
+└── static
+├── css
+│ └── main.css
+├── img
+│ ├── delete.svg
+│ ├── favicon.ico
+│ └── logo.png
+└── js
+└── main.js
 
 
 ---
@@ -93,15 +92,71 @@ It’s designed for simplicity, security, and clean code organization — ideal 
 ## ⚙️ Setup & Installation
 
 ### 1️⃣ Clone the Repository
+
 ```bash
 git clone https://github.com/Script-Savant/Golang/
 cd Golang/snippet-box
 
-### 2️⃣ Configure Database
+2️⃣ Configure the Database
+
+In MySQL, create the database:
+
 CREATE DATABASE snippetbox_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-dsn := "<your username>:<password>@tcp(localhost:3306)/snippetbox_db?parseTime=True&loc=Local"
+Then update your DSN (Data Source Name) inside main.go:
 
+dsn := "alex:password@tcp(localhost:3306)/snippetbox_db?parseTime=True&loc=Local"
 
-## Run the Application
-`go run ./cmd/web`
+Replace alex and password with your own MySQL credentials.
+3️⃣ Run Database Migrations
+
+GORM automatically migrates tables based on the models in /internal/models.
+Just run the app once to auto-create them:
+
+go run ./cmd/web
+
+4️⃣ Run the Application
+
+go run ./cmd/web
+
+Server will start at:
+
+http://localhost:8080
+
+🧪 Sample Data (Optional)
+
+If you want to populate your snippets table with test data:
+
+INSERT INTO snippets (title, content, expires_in, expires_at, user_id)
+VALUES
+('Welcome to SnippetBox', 'This is your first snippet!', 7, DATE_ADD(NOW(), INTERVAL 7 DAY), 1),
+('Gin + GORM Rocks', 'A powerful combination for Go web apps.', 30, DATE_ADD(NOW(), INTERVAL 30 DAY), 2),
+('Session Middleware', 'Using secure cookie-based sessions in Gin.', 7, DATE_ADD(NOW(), INTERVAL 7 DAY), 1),
+('Dynamic Templates', 'Render multiple template sets dynamically.', 365, DATE_ADD(NOW(), INTERVAL 365 DAY), 2),
+('Auto Expiry', 'Snippets automatically expire after the set duration.', 30, DATE_ADD(NOW(), INTERVAL 30 DAY), 1);
+
+🧰 Tech Stack
+
+- Language: Go (1.22+)
+
+- Framework: Gin Web Framework
+
+- ORM: GORM
+
+- Database: MySQL
+
+- Templating: Gin multitemplate
+
+- Sessions: gin-contrib/sessions
+
+- Styling: Vanilla CSS
+
+👨‍💻 Author
+
+Script-Savant
+GitHub: https://github.com/Script-Savant
+Project: https://github.com/Script-Savant/Golang/tree/main/snippet-box
+
+🧾 License
+
+This project is open-source and available under the MIT License
