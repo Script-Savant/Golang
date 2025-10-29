@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+
+  # postgresSQL database service
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: crud_app
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      # start_period: 30s
+
+
+  # Go application service
+  app:
+    build: .
+    container_name: go_crud_app
+
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: crud_app
+      POSTGRES_PORT: 5432
+      PORT: 8080
+      GIN_MODE: release
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    restart: on-failure
+
+
+volumes:
+  postgres_data:

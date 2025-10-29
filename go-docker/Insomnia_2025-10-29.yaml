@@ -1,0 +1,144 @@
+type: collection.insomnia.rest/5.0
+name: go-docker
+meta:
+  id: wrk_0c7e98e37fd0410991fe9467cb5326cd
+  created: 1761739095083
+  modified: 1761739095083
+  description: ""
+collection:
+  - url: http://localhost:8080/books
+    name: create book
+    meta:
+      id: req_0f0b423699bf4e43a8431a0339e06198
+      created: 1761739123904
+      modified: 1761739433986
+      isPrivate: false
+      description: ""
+      sortKey: -1761739123904
+    method: POST
+    body:
+      mimeType: application/json
+      text: |
+        {
+        	"title": "Armanda",
+        	"author": "Arturo Gato"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/11.6.2
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/books
+    name: get all books
+    meta:
+      id: req_c6dc428176794ffe97b222ee2147731f
+      created: 1761739353667
+      modified: 1761739446892
+      isPrivate: false
+      description: ""
+      sortKey: -1761739353667
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.6.2
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/books/1
+    name: get book by id
+    meta:
+      id: req_bc2083d5b02b4bdc8ae92b232fa63485
+      created: 1761739391038
+      modified: 1761739459816
+      isPrivate: false
+      description: ""
+      sortKey: -1761739391038
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.6.2
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/books/1
+    name: update book
+    meta:
+      id: req_119490f96e124d428894fa3eb5869fd9
+      created: 1761739469914
+      modified: 1761739790901
+      isPrivate: false
+      description: ""
+      sortKey: -1761739469914
+    method: PATCH
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        		"title": "The young lions",
+        		"author": "Irwin Shaw"
+        	}
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/11.6.2
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: http://localhost:8080/books/2
+    name: delete book
+    meta:
+      id: req_0140d852a39747a2a40239b8218b3885
+      created: 1761739797926
+      modified: 1761739855856
+      isPrivate: false
+      description: ""
+      sortKey: -1761739797926
+    method: DELETE
+    headers:
+      - name: User-Agent
+        value: insomnia/11.6.2
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_193561cd19ff35eedb5bb41cf066517069dd5a7d
+    created: 1761739095165
+    modified: 1761739095165
+environments:
+  name: Base Environment
+  meta:
+    id: env_193561cd19ff35eedb5bb41cf066517069dd5a7d
+    created: 1761739095163
+    modified: 1761739095163
+    isPrivate: false
