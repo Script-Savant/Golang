@@ -207,6 +207,8 @@ func playSong(fileName string, sampleRate beep.SampleRate) {
 
 		case evt := <-keyChan:
 			if evt.key == keyboard.KeyEsc {
+				keyboard.Close()
+				fmt.Println("\nExiting...")
 				os.Exit(0)
 			}
 
