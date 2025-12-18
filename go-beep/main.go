@@ -12,11 +12,19 @@ import (
 
 	"github.com/dhowden/tag"
 	"github.com/eiannone/keyboard"
-	"github.com/gopxl/beep"
-	"github.com/gopxl/beep/effects"
-	"github.com/gopxl/beep/mp3"
-	"github.com/gopxl/beep/speaker"
+	"github.com/gopxl/beep/v2"
+    "github.com/gopxl/beep/v2/effects"
+    "github.com/gopxl/beep/v2/mp3"
+    "github.com/gopxl/beep/v2/speaker"
+    "github.com/gopxl/beep/v2/wav"
+    "github.com/gopxl/beep/v2/flac"
 )
+
+var supportedFormats = map[string]bool{
+	".mp3":  true,
+	".wav":  true,
+	".flac": true,
+}
 
 func main() {
 
@@ -45,7 +53,8 @@ func main() {
 		}
 
 		for _, file := range files {
-			if !file.IsDir() && strings.HasSuffix(strings.ToLower(file.Name()), ".mp3") {
+			ext := strings.ToLower(filepath.Ext(file.Name()))
+			if !file.IsDir() && supportedFormats[ext] {
 				songs = append(songs, filepath.Join(path, file.Name()))
 			}
 		}
@@ -54,8 +63,9 @@ func main() {
 			log.Fatal("No MP3 files found in the directory")
 		}
 	} else {
-		if !strings.HasSuffix(strings.ToLower(path), ".mp3") {
-			log.Fatal("File must be an MP3")
+		ext := strings.ToLower(filepath.Ext(path))
+		if !supportedFormats[ext] {
+			log.Fatal("Unsupported file format")
 		}
 		songs = append(songs, path)
 	}
@@ -107,9 +117,29 @@ func playSong(fileName string, sampleRate beep.SampleRate) {
 
 	file.Seek(0, 0)
 
-	streamer, format, err := mp3.Decode(file)
-	if err != nil {
-		log.Fatal(err)
+	var streamer beep.StreamSeekCloser
+	var format beep.Format
+
+	ext := strings.ToLower(filepath.Ext(fileName))
+	switch ext {
+	case ".mp3":
+		streamer, format, err = mp3.Decode(file)
+		if err != nil {
+			log.Println(err)
+		}
+	case ".wav":
+		streamer, format, err = wav.Decode(file)
+		if err != nil {
+			log.Println(err)
+		}
+	case ".flac":
+		streamer, format, err = flac.Decode(file)
+		if err != nil {
+			log.Println(err)
+		}
+	default:
+		log.Printf("Unsupported format: %s", ext)
+		return
 	}
 	defer streamer.Close()
 
@@ -177,6 +207,8 @@ func playSong(fileName string, sampleRate beep.SampleRate) {
 
 		case evt := <-keyChan:
 			if evt.key == keyboard.KeyEsc {
+				keyboard.Close()
+				fmt.Println("\nExiting...")
 				os.Exit(0)
 			}
 
