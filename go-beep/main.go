@@ -13,11 +13,11 @@ import (
 	"github.com/dhowden/tag"
 	"github.com/eiannone/keyboard"
 	"github.com/gopxl/beep/v2"
-    "github.com/gopxl/beep/v2/effects"
-    "github.com/gopxl/beep/v2/mp3"
-    "github.com/gopxl/beep/v2/speaker"
-    "github.com/gopxl/beep/v2/wav"
-    "github.com/gopxl/beep/v2/flac"
+	"github.com/gopxl/beep/v2/effects"
+	"github.com/gopxl/beep/v2/flac"
+	"github.com/gopxl/beep/v2/mp3"
+	"github.com/gopxl/beep/v2/speaker"
+	"github.com/gopxl/beep/v2/wav"
 )
 
 var supportedFormats = map[string]bool{
@@ -82,22 +82,35 @@ func main() {
 	}
 	defer keyboard.Close()
 
-	fmt.Println("Controls: [P] Pause/Resume | [S] Skip | [Up/Down] Volume | [Esc] Quit")
+	fmt.Println("Controls: [Space] Pause/Resume | [N] Next | [P] Previous | [Left/Right] Rewind/Forward | [Up/Down] Volume | [Esc] Quit")
 
 	sampleRate := beep.SampleRate(44100)
 	speaker.Init(sampleRate, sampleRate.N(time.Second/10))
 
-	for _, song := range songs {
-		playSong(song, sampleRate)
+	currentIndex := 0
+	for currentIndex < len(songs) {
+		action := playSong(songs[currentIndex], sampleRate)
+		switch action {
+		case "next":
+			currentIndex++
+		case "prev":
+			if currentIndex > 0 {
+				currentIndex--
+			}
+		case "quit":
+			return
+		default:
+			currentIndex++
+		}
 	}
 
 }
 
-func playSong(fileName string, sampleRate beep.SampleRate) {
+func playSong(fileName string, sampleRate beep.SampleRate) string {
 	file, err := os.Open(fileName)
 	if err != nil {
 		log.Printf("Could not open %s: %v", fileName, err)
-		return
+		return "next"
 	}
 	defer file.Close()
 
@@ -106,7 +119,7 @@ func playSong(fileName string, sampleRate beep.SampleRate) {
 	if err == nil && metadata.Title() != "" {
 		artist := metadata.Artist()
 		if artist != "" {
-			displayName = fmt.Sprintf("%s -%s", artist, metadata.Title())
+			displayName = fmt.Sprintf("%s - %s", artist, metadata.Title())
 		} else {
 			displayName = metadata.Title()
 		}
@@ -139,7 +152,7 @@ func playSong(fileName string, sampleRate beep.SampleRate) {
 		}
 	default:
 		log.Printf("Unsupported format: %s", ext)
-		return
+		return "next"
 	}
 	defer streamer.Close()
 
@@ -203,7 +216,7 @@ func playSong(fileName string, sampleRate beep.SampleRate) {
 		case <-done:
 			close(quit)
 			fmt.Println("\nFinished song.")
-			return
+			return "next"
 
 		case evt := <-keyChan:
 			if evt.key == keyboard.KeyEsc {
@@ -212,24 +225,61 @@ func playSong(fileName string, sampleRate beep.SampleRate) {
 				os.Exit(0)
 			}
 
-			if evt.char == 'p' || evt.char == 'P' {
+			// Space bar - pause/resume
+			if evt.key == keyboard.KeySpace {
 				speaker.Lock()
 				ctrl.Paused = !ctrl.Paused
 				speaker.Unlock()
 			}
 
-			if evt.char == 's' || evt.char == 'S' {
+			// N - next song
+			if evt.char == 'n' || evt.char == 'N' {
 				close(quit)
 				speaker.Clear()
-				return
+				return "next"
 			}
 
+			// P - previous song
+			if evt.char == 'p' || evt.char == 'P' {
+				close(quit)
+				speaker.Clear()
+				return "prev"
+			}
+
+			// Arrow Left - rewind 5 seconds
+			if evt.key == keyboard.KeyArrowLeft {
+				speaker.Lock()
+				newPos := streamer.Position() - format.SampleRate.N(time.Second*5)
+				if newPos < 0 {
+					newPos = 0
+				}
+				if err := streamer.Seek(newPos); err == nil {
+					// Seek successful
+				}
+				speaker.Unlock()
+			}
+
+			// Arrow Right - forward 5 seconds
+			if evt.key == keyboard.KeyArrowRight {
+				speaker.Lock()
+				newPos := streamer.Position() + format.SampleRate.N(time.Second*5)
+				if newPos > streamer.Len() {
+					newPos = streamer.Len()
+				}
+				if err := streamer.Seek(newPos); err == nil {
+					// Seek successful
+				}
+				speaker.Unlock()
+			}
+
+			// Arrow Up - volume up
 			if evt.key == keyboard.KeyArrowUp {
 				speaker.Lock()
 				volume.Volume += 0.2
 				speaker.Unlock()
 			}
 
+			// Arrow Down - volume down
 			if evt.key == keyboard.KeyArrowDown {
 				speaker.Lock()
 				volume.Volume -= 0.2
