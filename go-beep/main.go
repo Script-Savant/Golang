@@ -82,7 +82,7 @@ func main() {
 	}
 	defer keyboard.Close()
 
-	fmt.Println("Controls: [Space] Pause/Resume | [N] Next | [P] Previous | [Left/Right] Rewind/Forward | [Up/Down] Volume | [Esc] Quit")
+	fmt.Println("Controls: [Space] Pause/Resume | [N] Next | [P] Previous | [Left/Right] Rewind/Forward | [Up/Down] Volume | [Esc/Q] Quit")
 
 	sampleRate := beep.SampleRate(44100)
 	speaker.Init(sampleRate, sampleRate.N(time.Second/10))
@@ -219,7 +219,7 @@ func playSong(fileName string, sampleRate beep.SampleRate) string {
 			return "next"
 
 		case evt := <-keyChan:
-			if evt.key == keyboard.KeyEsc {
+			if evt.key == keyboard.KeyEsc || evt.char == 'q' || evt.char == 'Q' {
 				keyboard.Close()
 				fmt.Println("\nExiting...")
 				os.Exit(0)
