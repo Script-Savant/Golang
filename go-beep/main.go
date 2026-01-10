@@ -7,6 +7,7 @@ import (
 	"math/rand/v2"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -27,7 +28,7 @@ var supportedFormats = map[string]bool{
 }
 
 func main() {
-
+	runtime.GOMAXPROCS(1)
 	// flags
 	shuffle := flag.Bool("s", false, "shuffle playback order")
 	flag.Parse()
