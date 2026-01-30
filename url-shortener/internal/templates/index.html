@@ -1,0 +1,9 @@
+{{ define "content" }}
+    <h1 class="text-center mb-4">URL Shortener</h1>
+    <form hx-post="/shorten" hx-target="#result" hx-swap="innerHTML" class="d-flex gap-2">
+        <input type="url" name="url" class="form-control" placeholder="Enter long URL" required />
+        <button type="submit" class="btn btn-primary">Shorten</button>
+    </form>
+
+    <div class="mt-4" id="result"></div>
+{{ end }}
